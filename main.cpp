@@ -46,9 +46,8 @@ int main(int argc, char const *argv[])
     t.print();
     t.describe();
     t.add_record(put(Int,11), put(Bool,true), put(String, "Renne"));
+    t.add_col("cislo", "Int");
     t.print();
-    t.describe();
-    t.add_record(put(Int,11), put(Bool,true), put(String, "Renne"));
     t.describe();
 
 
