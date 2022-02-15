@@ -41,11 +41,16 @@ int main(int argc, char const *argv[])
 
     t.print();
     t.describe();
-    t.delete_record("pohlavi", Bool(true));
+    cout << "deleting record " << endl;
+    t.delete_record("vek", Int(20));
     t.print();
     t.describe();
     t.add_record(put(Int,11), put(Bool,true), put(String, "Renne"));
     t.print();
+    t.describe();
+    t.add_record(put(Int,11), put(Bool,true), put(String, "Renne"));
+    t.describe();
+
 
 
 }

@@ -8,18 +8,19 @@ class Record{
 
     //kazdy record bude vektor pointeru na jednotliva data
 
+
     public:
     std::vector<std::unique_ptr<Data>> contents; //public or friend?
-    unsigned int id;
 
     Record();
     ~Record();
     Record(const Record &other);
-    unsigned int get_id ()const {return id;};
+    //int get_id ()const {return contents.at(0)->;};
+
+
     void add_data(std::unique_ptr<Data> d = nullptr);
     void print() const;
     void delete_self();
-    void set_id(const unsigned int _id){id = _id;};
 
 };
 
@@ -42,7 +43,7 @@ void Record::add_data(std::unique_ptr<Data> d){
 }
 
 void Record::print() const{
-    std::cout << this->get_id() << "     ";
+    //std::cout << this->get_id() << "     ";
     for(auto i = 0; i < contents.size(); i++){
         if (contents.at(i)){
         std::cout << contents.at(i)->to_str() << "     ";

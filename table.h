@@ -32,7 +32,7 @@ class Table{
         Table find(const std::string & colname, const Data & d);
 
         void describe() const;
-        //void truncate(); TBD
+        void truncate(); //TBD
 
         void add_record(std::unique_ptr<Record> rec);
         void add_record(Record &rec);
@@ -41,11 +41,11 @@ class Table{
         void add_record(args&&...d){
             try{
                 auto size = sizeof...(d);
-                if(size != col_num)
+                if(size != col_num-1)
                     throw "Number of arguments( TBD ) does not match number of columns. Record not added.";
 
                 auto rec = std::make_unique<Record>();
-                rec->set_id(max_id+1);
+                rec->add_data(std::make_unique<Int>(max_id+1));
                 max_id++;
                 row_num++;
                 //rec->print();
@@ -68,8 +68,9 @@ class Table{
         } 
 };
 
-Table::Table():row_num(0), col_num(0), max_id(0){
+Table::Table():row_num(0), col_num(1), max_id(0){
     std::cout << "Inicialization of table succesful." << std::endl;
+    col_names.push_back("id");
 }
 
 void Table::add_col(std::string name, std::string type){ 
@@ -90,10 +91,10 @@ void Table::add_col(std::string name, std::string type){
 void Table::print() const{
     std::cout << "-" << std::endl;
     std::cout << "TABLE" <<std::endl;
-    std::cout << "id   ";
+    //std::cout << "id   ";
     for(auto i = 0; i < col_num; i++){
-        std::cout << col_names.at(i)<< "     ";
-    }
+        std::cout << col_names.at(i)<< "   ";
+    } 
     std::cout << std::endl;
     for(auto i = records.begin(); i != records.end(); i++ ){
         if(*i)
@@ -172,5 +173,13 @@ Table Table::find(const std::string & colname, const Data & d){
     records.push_back(std::move(rec));
 }; */
 
+
+void Table::truncate(){
+    int i = 1;
+    for(auto& rec : records){
+        //rec->set_id(i); TBD 
+        i++;  
+    }
+};
 
  

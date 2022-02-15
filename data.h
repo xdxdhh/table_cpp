@@ -46,6 +46,7 @@ class Int : public Data{
         std::unique_ptr<Data> clone() const{
             return std::make_unique<Int>(*this);
         }
+        int get_value() const {return _value;};
 };
 
 class String : public Data{
