@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
 {
     Table t;
     t.add_col("vek","Int");
-    t.add_cols({"pohlavi", "Bool", "jmeno", "String"});
+    t.add_cols({"pohlavi", "Boolx", "jmeno", "String"});
 /*     t.add_col("pohlavi","Bool");
     t.add_col("jmeno","String");
     auto x = t.get_cols();

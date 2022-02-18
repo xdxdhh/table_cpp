@@ -2,6 +2,14 @@
 
 const std::list<std::string> Table::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
+bool Table::is_allowed(std::string type){
+    for(const auto& t : ALLOWED_TYPES){
+        if(type == t)
+            return true;
+    }
+    return false;
+};
+
 
 Table::Table():row_num(0), col_num(1), max_id(0){
     std::cout << "Inicialization of table succesful." << std::endl;
@@ -14,7 +22,9 @@ void Table::add_col(std::string name, std::string type){
         if(x == name)
             throw std::invalid_argument("Column of this name already exists.");
     }
-
+    if(is_allowed(type) == false){
+        throw std::invalid_argument("Invalid type name.");
+    }
     col_names.push_back(name);
     //kontrola not-allowed typu TBD
     col_types.push_back(type);

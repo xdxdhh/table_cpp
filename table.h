@@ -4,10 +4,6 @@
 #include <stdexcept>
 #include <stdexcept>
 
-//dictionary povolenych datovych typu TBD
-//ALLOWED_TYPES std::list<std::string> = {"Int", "String", "Bool"}
-
-
 class Table{
     
 
@@ -17,7 +13,7 @@ class Table{
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
     std::vector<std::string> col_types;
-    static const std::list<std::string> ALLOWED_TYPES ;//= {"Int", "String", "Bool"};
+    static const std::list<std::string> ALLOWED_TYPES ;
     bool is_allowed(std::string type);
 
     public:
