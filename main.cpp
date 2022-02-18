@@ -1,4 +1,4 @@
-#include "table.h"
+#include "table.cpp"
 #include "iostream"
 #include <vector>
 
@@ -16,7 +16,8 @@ int main(int argc, char const *argv[])
 {
     Table t;
     t.add_col("vek","Int");
-    t.add_col("pohlavi","Bool");
+    t.add_cols({"pohlavi", "Bool", "jmeno", "String"});
+/*     t.add_col("pohlavi","Bool");
     t.add_col("jmeno","String");
     auto x = t.get_cols();
 
@@ -24,7 +25,7 @@ int main(int argc, char const *argv[])
     t.add_record(put(Int,20), put(Bool,false), put(String, "Martin"));
     t.add_record(put(Int,40), put(Bool,false), put(String, "Martin"));
     t.add_record(put(Int,30), put(Bool,true), put(String, "Diana"));
-    
+     */
 
     //t.delete_record("jmeno", String("Martidsan"));
     
@@ -39,7 +40,7 @@ int main(int argc, char const *argv[])
     t.delete_record("pohlavi", Bool(false));
     t.print(); */
 
-    t.print();
+/*     t.print();
     t.describe();
     cout << "deleting record " << endl;
     t.delete_record("vek", Int(20));
@@ -49,7 +50,9 @@ int main(int argc, char const *argv[])
     t.add_col("cislo", "Int");
     t.print();
     t.describe();
+    t.add_record(put(Int,11), put(Bool,true), put(String, "Renne"), put(Int, 22));
 
+ */
 
 
 }
