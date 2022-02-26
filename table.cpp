@@ -1,4 +1,4 @@
-#include "table.h"
+/* #include "table.h"
 
 const std::list<std::string> Table::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
@@ -42,19 +42,16 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
     }
 }
 
-void Table::print() const{
+void Table::print() const{ //pretty printing 
     std::cout << "-" << std::endl;
     std::cout << "TABLE" <<std::endl;
-    //std::cout << "id   ";
     for(auto i = 0; i < col_num; i++){
         std::cout << col_names.at(i)<< "   ";
     } 
     std::cout << std::endl;
     for(auto i = records.begin(); i != records.end(); i++ ){
         if(*i)
-            {
-                (*i)->print();
-            }
+            {(*i)->print();}
         else
             {std::cout << "je tu null" << std::endl;}
         std::cout << std::endl;
@@ -99,9 +96,9 @@ void Table::delete_record(const std::string & colname, const Data & d){
             (*i)->delete_self();
             std::cout<< "mazu record " << std::endl;
             i = records.erase(i);
+            row_num--;
         }
     }
-    row_num--;
 }
 
 
@@ -129,17 +126,25 @@ Table Table::find(const std::string & colname, const Data & d){
     return result;
 }
 
-/* void Table::add_record(std::unique_ptr<Record> rec){
-    records.push_back(std::move(rec));
-}; */
 
 
-void Table::truncate(){
+void Table::truncate(){ 
     int i = 1;
     for(auto& rec : records){
-        //rec->set_id(i); TBD 
+        rec->contents.at(0) = std::make_unique<Int>(i);
         i++;  
     }
 };
 
+void Table::clear_records(){
+    records.clear();
+    row_num = 0;
+    max_id = 0;
+    std::cout << "size after deleting table:" << records.size() <<std::endl; //helper print
 
+};
+
+/* void Table::add_record(std::unique_ptr<Record> rec){
+    records.push_back(std::move(rec));
+}; */
+ */

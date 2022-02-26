@@ -1,4 +1,4 @@
-#include "table.cpp"
+#include "table.h"
 #include "iostream"
 #include <vector>
 
@@ -9,23 +9,32 @@ void print(Data &d)
 
 }
 
-#define put(type, value) std::unique_ptr<Data>(dynamic_cast<Data*>(new type(value)))
-//#define put(type, value) dynamic_cast<Data*>(std::make_unique<type>(value))
+//#define put(type, value) std::unique_ptr<Data>(dynamic_cast<Data*>(new type(value)))
+//#define blank std::unique_ptr<Data>(dynamic_cast<Data*>(new Blank()))
+
 
 int main(int argc, char const *argv[])
 {
     Table t;
     t.add_col("vek","Int");
-    t.add_cols({"pohlavi", "Boolx", "jmeno", "String"});
-/*     t.add_col("pohlavi","Bool");
-    t.add_col("jmeno","String");
-    auto x = t.get_cols();
+    t.add_cols({"pohlavi", "Bool", "jmeno", "String"});
 
 
-    t.add_record(put(Int,20), put(Bool,false), put(String, "Martin"));
-    t.add_record(put(Int,40), put(Bool,false), put(String, "Martin"));
-    t.add_record(put(Int,30), put(Bool,true), put(String, "Diana"));
-     */
+    t.add_record(put<Int>(20), put<Bool>(false), put<String>("Martin"));
+    t.add_record(put<Int>(20), put<Blank>(), put<String>("Martin"));
+    //t.add_record(put(Int,40), blank , put(String, "Martin"));
+    //t.add_record(put(Int,30), put(Bool,true), put(String, "Diana"));
+
+    t.print();
+    //t.clear_records();
+    //t.delete_record("vek", Int(40));
+    //t.print();
+    //t.truncate();
+    //t.print();
+    //t.clear_records();
+    //t.print();
+
+    
 
     //t.delete_record("jmeno", String("Martidsan"));
     

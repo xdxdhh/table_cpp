@@ -87,3 +87,19 @@ class Bool : public Data{
             return std::make_unique<Bool>(*this);
         }
 };
+
+class Blank : public Data{
+    public:
+        //Blank(){};
+        std::string type() const{return "Blank";};
+        std::string to_str() const {return "null";};
+        std::vector<std::byte> to_bytes() const {
+            auto v = std::vector<std::byte>(1); //prazdny vektor 
+            return std::move(v); 
+        }
+        //Blank(const Blank &other){}
+        std::unique_ptr<Data> clone() const{
+            return std::make_unique<Blank>();
+        }
+        
+};
