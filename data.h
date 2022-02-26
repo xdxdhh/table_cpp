@@ -40,9 +40,9 @@ class Int : public Data{
             std::copy(reinterpret_cast<const std::byte*>(&_value), reinterpret_cast<const std::byte*>(&_value) + sizeof(_value), v.data());
             return std::move(v); 
         }
-        Int(const Int &other){
+        /* Int(const Int &other){
             _value = other._value;
-        }
+        } */
         std::unique_ptr<Data> clone() const{
             return std::make_unique<Int>(*this);
         }
@@ -61,9 +61,9 @@ class String : public Data{
             std::copy(_value.begin(),_value.end(), reinterpret_cast<char*>(v.data()));
             return std::move(v); 
         }
-        String(const String &other){
+        /* String(const String &other){
             _value = other._value;
-        }
+        } */
         std::unique_ptr<Data> clone() const{
             return std::make_unique<String>(*this);
         }
@@ -80,9 +80,9 @@ class Bool : public Data{
             v.at(0) = static_cast<const std::byte>(_value);
             return std::move(v); 
         }
-        Bool(const Bool &other){
+        /* Bool(const Bool &other){
             _value = other._value;
-        }
+        } */
         std::unique_ptr<Data> clone() const{
             return std::make_unique<Bool>(*this);
         }
@@ -94,7 +94,7 @@ class Blank : public Data{
         std::string type() const{return "Blank";};
         std::string to_str() const {return "null";};
         std::vector<std::byte> to_bytes() const {
-            auto v = std::vector<std::byte>(1); //prazdny vektor 
+            auto v = std::vector<std::byte>(1); //empty vector
             return std::move(v); 
         }
         //Blank(const Blank &other){}

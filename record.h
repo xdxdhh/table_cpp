@@ -16,6 +16,7 @@ class Record{
     
     //data management:
     void add_data(std::unique_ptr<Data> d = nullptr);
+    void delete_data(int index);
 
     //descriptive stuff:
     void print() const;
@@ -24,7 +25,6 @@ class Record{
 
 
 //BASIC RECORD MANAGEMENT:
-
 
 Record::Record(const Record &other){//copy constructor
     contents.reserve(other.contents.size());
@@ -38,13 +38,22 @@ void Record::delete_self(){
 }
 
 //DATA MANAGEMENT:
+
 void Record::add_data(std::unique_ptr<Data> d){
     //if (d) TBD
     contents.push_back(std::move(d));
 }
 
+void Record::delete_data(int index){
+    //kontrola jestli jsou data na tom indexu
+    if(contents.size() > index){
+        contents.erase(contents.begin() + index);
+    }
+};
+
 
 //DESCRIPTIVE STUFF:
+
 void Record::print() const{
     //std::cout << this->get_id() << "     ";
     for(auto i = 0; i < contents.size(); i++){

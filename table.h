@@ -3,14 +3,13 @@
 #include <iostream>
 #include <stdexcept>
 #include <stdexcept>
+#include <algorithm>
 
 
 class Table{
 
     private:
 
-    unsigned int row_num; //delete
-    unsigned int col_num; //delete 
     unsigned int max_id;
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
@@ -26,6 +25,7 @@ class Table{
         Table();
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
+        void delete_col(std::string colname);
 
 
         //descriptive functions:
@@ -36,14 +36,14 @@ class Table{
         //getters:
         std::vector<std::string> get_cols() const {return col_names;};
         std::vector<std::string> get_coltypes()const {return col_types;};
-        unsigned int get_col_num() const {return col_num;}
-        unsigned int get_row_num() const {return row_num;}
+        unsigned int get_col_num() const {return col_names.size();}
+        unsigned int get_row_num() const {return records.size();}
 
 
         //record management:
         void delete_record(const std::string & colname, const Data & d);
         void clear_records();
-        //void add(Record rec);  possibly?
+        void add_record(std::unique_ptr<Record> rec); 
         //void add_record(std::unique_ptr<Record> rec);
 
 
@@ -52,7 +52,7 @@ class Table{
         Table find(const std::string & colname, const Data & d);
 
 
-        template<typename... args>  //https://stackoverflow.com/questions/29972563/how-to-construct-a-vector-with-unique-pointers
+        /* template<typename... args>  //https://stackoverflow.com/questions/29972563/how-to-construct-a-vector-with-unique-pointers
         void add_record(args&&...d){
             auto size = sizeof...(d);
             if(size != col_num-1)
@@ -61,7 +61,6 @@ class Table{
             auto rec = std::make_unique<Record>();
             rec->add_data(std::make_unique<Int>(max_id+1));
             max_id++;
-            row_num++;
             //rec->print();
             //for(auto i = 0; i < size; i++ ){
                 //std::string type = col_types.at(i); //TBD Vyjimka pro spatny typ
@@ -75,6 +74,34 @@ class Table{
             ),void() ,nullptr )...};
 
             records.push_back(std::move(rec));
+        } */
+
+        template<typename... args>  //https://stackoverflow.com/questions/29972563/how-to-construct-a-vector-with-unique-pointers
+        void add_record(args&&...d){
+            auto size = sizeof...(d);
+            if(size != get_col_num()-1)
+                throw "Number of arguments( TBD ) does not match number of columns. Record not added.";
+
+            auto rec = std::make_unique<Record>();
+            rec->add_data(std::make_unique<Int>(max_id+1));
+            max_id++;
+            //rec->print();
+            //for(auto i = 0; i < size; i++ ){
+                //std::string type = col_types.at(i); //TBD Vyjimka pro spatny typ
+                //if(d.at(i)->type() != type) {} TBD
+
+
+            using discard = std::unique_ptr<Data>[];
+            // https://en.cppreference.com/w/cpp/language/fold
+            // https://en.cppreference.com/w/cpp/language/operator_other#Built-in_comma_operator
+            (void)discard{ nullptr, ((
+                /* args je v této chvíli jeden typ z variadic args..., 
+                args(std::move(d)) volá move konstruktor typu */
+                rec->add_data(std::move(std::unique_ptr<Data>(new args(std::move(d)))))
+            ),void() ,nullptr )...};
+
+            //records.push_back(std::move(rec));
+            add_record(std::move(rec));
         }
 
  
@@ -105,7 +132,7 @@ bool Table::is_allowed(std::string type){
 
 
 //BASIC TABLE MANAGING FUNCTIONS
-Table::Table():row_num(0), col_num(1), max_id(0){
+Table::Table():max_id(0){
     std::cout << "Inicialization of table succesful." << std::endl;
     col_names.push_back("id");
     col_types.push_back("Int");
@@ -126,7 +153,6 @@ void Table::add_col(std::string name, std::string type){
     for(auto& i : records){
         i->add_data();
     }
-    col_num ++;
 }
 
 
@@ -137,6 +163,24 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
     }
 }
 
+void Table::delete_col(std::string colname){
+    //std::remove_if(col_names.begin(), col_names.end());
+    
+    //TBD kontrola jestli colname nepatri do primary key 
+    int index = -1;
+    for(auto i = 0; i < col_names.size(); i++){
+        if(col_names.at(i) == colname){
+            index = i;
+        }
+    }
+    if(index == -1){std::cout << "Column to delete:" << colname << " not found in the table.";}; //throw or not? 
+    for(auto &rec : records){
+        rec->delete_data(index);
+    }
+    col_names.erase(col_names.begin() + index );
+    col_types.erase(col_types.begin() + index );
+};
+
 
 //RECORDS MANAGEMENT:
 
@@ -144,7 +188,7 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
 
 void Table::delete_record(const std::string & colname, const Data & d){
     int index;
-    for(auto i = 0; i<col_num; i++){
+    for(auto i = 0; i<get_col_num(); i++){
         if(col_names.at(i) == colname)
             index = i;
     }
@@ -155,7 +199,6 @@ void Table::delete_record(const std::string & colname, const Data & d){
             (*i)->delete_self();
             std::cout<< "mazu record " << std::endl;
             i = records.erase(i);
-            row_num--;
         }
     }
 }
@@ -163,9 +206,20 @@ void Table::delete_record(const std::string & colname, const Data & d){
 
 void Table::clear_records(){
     records.clear();
-    row_num = 0;
     max_id = 0;
     std::cout << "size after deleting table:" << records.size() <<std::endl; //helper print
+}
+
+void Table::add_record(std::unique_ptr<Record> rec){
+    if(get_col_num() != rec->contents.size()) {throw "Number of arguments( TBD ) does not match number of columns. Record not added.";};
+    for(auto i = 0; i < get_col_num(); i++){
+        std::string coltype = col_types.at(i);
+        if(rec->contents.at(i)->type() != coltype && rec->contents.at(i)->type() != "Blank"){
+            std::cout << "column types doesnt match: " <<  col_types.at(i) << rec->contents.at(i)->type() <<std::endl;
+            throw std::invalid_argument("Data doesnt match column types.");
+        }
+    }
+    records.push_back(std::move(rec));
 }
 
 
@@ -175,7 +229,7 @@ void Table::clear_records(){
 void Table::print() const{ //pretty printing 
     std::cout << "-" << std::endl;
     std::cout << "TABLE" <<std::endl;
-    for(auto i = 0; i < col_num; i++){
+    for(auto i = 0; i < get_col_num(); i++){
         std::cout << col_names.at(i)<< "   ";
     } 
     std::cout << std::endl;
@@ -225,11 +279,10 @@ void Table::truncate(){
 Table Table::find(const std::string & colname, const Data & d){   //find returns table containing all rows that contain data d in column colname
     Table result;
     //copying col names
-    result.col_num = col_num;
     result.col_names = col_names;
     //getting index of column:
     int index;
-    for(auto i = 0; i<col_num; i++){
+    for(auto i = 0; i<get_col_num(); i++){
         if(col_names.at(i) == colname)
             index = i;
     }
