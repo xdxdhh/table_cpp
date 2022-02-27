@@ -13,10 +13,23 @@ class Table{
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
     std::vector<std::string> col_types;
-    static const std::list<std::string> ALLOWED_TYPES ;
+    static const std::list<std::string> ALLOWED_TYPES;
 
     //helper functions:>
     bool is_allowed(std::string type);
+
+    // navic se da do teto funkce zahrnout i exception kdyz nenajde
+    int get_col_index(std::string colname)
+    {
+        // mozna by slo vyuzit std::find_if
+        int index = -1;
+        for(auto i = 0; i < get_col_num(); i++){
+            if(col_names.at(i) == colname){
+                index = i;
+            }
+        }
+        return index;
+    }
 
     public:
 
@@ -207,12 +220,7 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
 void Table::delete_col(std::string colname){
     
     //TBD kontrola jestli colname nepatri do primary key 
-    int index = -1;
-    for(auto i = 0; i < col_names.size(); i++){
-        if(col_names.at(i) == colname){
-            index = i;
-        }
-    }
+    int index = get_col_index(colname);
     if(index == -1){throw(std::invalid_argument("column to delete not found in the table"));}
     for(auto &rec : records){
         rec->delete_data(index);
@@ -227,11 +235,7 @@ void Table::delete_col(std::string colname){
 //t.delete_record('jmeno', 'Petr');
 
 void Table::delete_record(const std::string & colname, const Data & d){
-    int index = -1;
-    for(auto i = 0; i<get_col_num(); i++){
-        if(col_names.at(i) == colname)
-            index = i;
-    }
+    int index = get_col_index(colname);
     if(index == -1){throw std::invalid_argument("Colname to delete doesnt exist");};
     for(auto i = records.begin(); i != records.end(); i++){
         if(*(*i)->contents.at(index) == d){
@@ -305,11 +309,7 @@ void Table::truncate(){
 
 Table Table::find(const std::string & colname, const Data & d){   //find returns table containing all rows that contain data d in column colname
     //getting index of column:
-    int index = -1;
-    for(auto i = 0; i<get_col_num(); i++){
-        if(col_names.at(i) == colname)
-            index = i;
-    }
+    int index = get_col_index(colname);
     if(index == -1){throw std::invalid_argument("Colname to find doesnt exist in the table.");};
     //search
     Table result;

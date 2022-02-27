@@ -17,11 +17,17 @@ class Data
 
 
 bool operator==(const Data &lhs, const Data &rhs){
+    if (lhs.type() != rhs.type())
+        return false;
+
     auto lhs_vec = lhs.to_bytes();
     auto rhs_vec = rhs.to_bytes();
+    
+    // cely zbytek jde nahradit std::equal
+    
     if(rhs_vec.size() != lhs_vec.size())
-        
         return false;
+        
     for(auto i = 0; i < rhs_vec.size(); i++){
         if(rhs_vec.at(i) != lhs_vec.at(i))
             return false;
@@ -39,7 +45,7 @@ class Int : public Data{
         std::vector<std::byte> to_bytes() const {
             auto v = std::vector<std::byte>(sizeof(_value)); 
             std::copy(reinterpret_cast<const std::byte*>(&_value), reinterpret_cast<const std::byte*>(&_value) + sizeof(_value), v.data());
-            return std::move(v); 
+            return v; 
         }
         /* Int(const Int &other){
             _value = other._value;
@@ -60,7 +66,7 @@ class String : public Data{
         std::vector<std::byte> to_bytes() const {
             auto v = std::vector<std::byte>(_value.size()); 
             std::copy(_value.begin(),_value.end(), reinterpret_cast<char*>(v.data()));
-            return std::move(v); 
+            return v; 
         }
         /* String(const String &other){
             _value = other._value;
@@ -79,7 +85,7 @@ class Bool : public Data{
         std::vector<std::byte> to_bytes() const {
             auto v = std::vector<std::byte>(1); 
             v.at(0) = static_cast<const std::byte>(_value);
-            return std::move(v); 
+            return v; 
         }
         /* Bool(const Bool &other){
             _value = other._value;
@@ -95,8 +101,7 @@ class Blank : public Data{
         std::string type() const{return "Blank";};
         std::string to_str() const {return "null";};
         std::vector<std::byte> to_bytes() const {
-            auto v = std::vector<std::byte>(1); //empty vector
-            return std::move(v); 
+            return std::vector<std::byte>(); //empty vector
         }
         //Blank(const Blank &other){}
         std::unique_ptr<Data> clone() const{
