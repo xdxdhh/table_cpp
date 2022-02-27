@@ -23,6 +23,14 @@ class Record{
 
 };
 
+bool operator==(const Record &lhs, const Record &rhs){
+    if(lhs.contents.size() != rhs.contents.size()){return false;}
+    for(auto i = 0; i < lhs.contents.size(); i++){
+        if(*lhs.contents.at(i) != *rhs.contents.at(i))
+            return false;
+    }
+    return true;
+}
 
 //BASIC RECORD MANAGEMENT:
 

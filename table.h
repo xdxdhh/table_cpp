@@ -3,7 +3,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <stdexcept>
-#include <algorithm>
 
 
 class Table{
@@ -16,7 +15,7 @@ class Table{
     std::vector<std::string> col_types;
     static const std::list<std::string> ALLOWED_TYPES ;
 
-    //helper functions:
+    //helper functions:>
     bool is_allowed(std::string type);
 
     public:
@@ -26,7 +25,7 @@ class Table{
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
         void delete_col(std::string colname);
-
+        bool operator==(const Table &rhs);
 
         //descriptive functions:
         void print() const;
@@ -80,7 +79,7 @@ class Table{
         void add_record(args&&...d){
             auto size = sizeof...(d);
             if(size != get_col_num()-1)
-                throw "Number of arguments( TBD ) does not match number of columns. Record not added.";
+                throw std::invalid_argument("Number of arguments( TBD ) does not match number of columns. Record not added.");
 
             auto rec = std::make_unique<Record>();
             rec->add_data(std::make_unique<Int>(max_id+1));
@@ -104,13 +103,31 @@ class Table{
             add_record(std::move(rec));
         }
 
+        friend std::ostream& operator<<(std::ostream& os,const Table &t){
+            os << "-" << std::endl;
+            os << "TABLE" <<std::endl;
+            for(auto i = 0; i < t.get_col_num(); i++){
+                os << t.col_names.at(i)<< "   ";
+            } 
+            os << std::endl;
+            for(auto i = t.records.begin(); i != t.records.end(); i++ ){
+                if(*i)
+                    {(*i)->print();}
+                else
+                    {os << "je tu null" << std::endl;} //muze se stat?
+                os << std::endl;
+            }
+            os << "-" << std::endl;
+            return os;
+        };
+
  
 };
 
 const std::list<std::string> Table::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
-//2 functions to pass data arguments into functions
-template<typename T,typename Arg>
+//2 functions to pass data arguments into functions -depracated
+/* template<typename T,typename Arg>
 std::unique_ptr<Data> put(Arg a){
     return std::unique_ptr<Data>(dynamic_cast<Data*>(new T(a)));
     }
@@ -118,7 +135,31 @@ std::unique_ptr<Data> put(Arg a){
 template<typename T>
 std::unique_ptr<Data> put(){
     return std::unique_ptr<Data>(dynamic_cast<Data*>(new T()));
+    } */
+
+
+/* bool operator==(const Table &lhs, const Table &rhs){
+    if(lhs.get_col_num() != rhs.get_col_num() && lhs.get_row_num() != rhs.get_row_num()){return false;}
+    for(auto i = 0; i < lhs.get_row_num(); i++){
+        if(lhs.records.at(i) != rhs.records.at(i))
+            return false;
     }
+    return true;
+}
+ */
+
+bool Table::operator==(const Table &rhs){
+    if(this->get_col_num() != rhs.get_col_num() || this->get_row_num() != rhs.get_row_num()){return false;}
+    auto it1 = this->records.cbegin();
+    auto it2 = rhs.records.cbegin();
+    for(; it1 != this->records.cend(); it1++, it2++){
+        if(**it1 != **it2)
+            return false;
+    }
+    return true;
+};
+
+
 
 
 //HELPER PRIVATE FUNCTIONS
@@ -173,7 +214,7 @@ void Table::delete_col(std::string colname){
             index = i;
         }
     }
-    if(index == -1){std::cout << "Column to delete:" << colname << " not found in the table.";}; //throw or not? 
+    if(index == -1){throw(std::invalid_argument("column to delete not found in the table"));}
     for(auto &rec : records){
         rec->delete_data(index);
     }
@@ -187,18 +228,17 @@ void Table::delete_col(std::string colname){
 //t.delete_record('jmeno', 'Petr');
 
 void Table::delete_record(const std::string & colname, const Data & d){
-    int index;
+    int index = -1;
     for(auto i = 0; i<get_col_num(); i++){
         if(col_names.at(i) == colname)
             index = i;
     }
-
+    if(index == -1){throw std::invalid_argument("Colname to delete doesnt exist");};
     for(auto i = records.begin(); i != records.end(); i++){
         if(*(*i)->contents.at(index) == d){
-            std::cout<< "mazu record " << std::endl;
-            (*i)->delete_self();
-            std::cout<< "mazu record " << std::endl;
+            //(*i)->delete_self();
             i = records.erase(i);
+            i--;
         }
     }
 }
@@ -227,20 +267,7 @@ void Table::add_record(std::unique_ptr<Record> rec){
 
 
 void Table::print() const{ //pretty printing 
-    std::cout << "-" << std::endl;
-    std::cout << "TABLE" <<std::endl;
-    for(auto i = 0; i < get_col_num(); i++){
-        std::cout << col_names.at(i)<< "   ";
-    } 
-    std::cout << std::endl;
-    for(auto i = records.begin(); i != records.end(); i++ ){
-        if(*i)
-            {(*i)->print();}
-        else
-            {std::cout << "je tu null" << std::endl;} //muze se stat?
-        std::cout << std::endl;
-    }
-    std::cout << "-" << std::endl;
+    std::cout << *this << std::endl;
 }
 
 void Table::describe() const{
@@ -270,6 +297,7 @@ void Table::describe() const{
 void Table::truncate(){ 
     int i = 1;
     for(auto& rec : records){
+        std::cout << "truncationg" << std::endl;
         rec->contents.at(0) = std::make_unique<Int>(i);
         i++;  
     }
@@ -277,16 +305,18 @@ void Table::truncate(){
 
 
 Table Table::find(const std::string & colname, const Data & d){   //find returns table containing all rows that contain data d in column colname
-    Table result;
-    //copying col names
-    result.col_names = col_names;
     //getting index of column:
-    int index;
+    int index = -1;
     for(auto i = 0; i<get_col_num(); i++){
         if(col_names.at(i) == colname)
             index = i;
     }
+    if(index == -1){throw std::invalid_argument("Colname to find doesnt exist in the table.");};
     //search
+    Table result;
+    //copying col names
+    result.col_names = col_names;
+    result.col_types = col_types;
 
     for(const auto& rec : records){
         if(*rec->contents.at(index) == d){
