@@ -205,7 +205,6 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
 }
 
 void Table::delete_col(std::string colname){
-    //std::remove_if(col_names.begin(), col_names.end());
     
     //TBD kontrola jestli colname nepatri do primary key 
     int index = -1;

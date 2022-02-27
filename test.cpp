@@ -46,9 +46,8 @@ TEST(BasicFunctionality, Records){
     t.add_cols({"name", "String", "age", "Int", "sex", "Bool"});
     t.add_record(String("Anna"), Int(20), Bool(true));
     t.add_record(String("Anna"), Int(20), Bool(true));
-    //EXPECT_THROW(t.add_record(String("Anna"), Int(20), BoolX(true)), std::invalid_argument);
     EXPECT_THROW(t.add_record(String("Anna"), Int(20), Bool(true), String("A")), std::invalid_argument);
-    //EXPECT_THROW(t.add_record(Blank(), Blank(), Blank()), std::invalid_argument); TBD NELZE UDELAT JEN blank radek
+    //EXPECT_THROW(t.add_record(Blank(), Blank(), Blank()), std::invalid_argument);  TBD NELZE UDELAT JEN blank radek
     t.add_record(Blank(), Int(40), Bool(true));
     //EXPECT_THROW(t.add_record(Int(25)), std::invalid_argument);
 }
