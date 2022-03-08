@@ -52,6 +52,9 @@ general notes:
 -při loadování dat dát možnost volby vlastního id sloupce, v tom případě by se nevytvářel žádný vlastní 
 
 
+Task list:
+implementace indexu
+
 
 # Table Class
 

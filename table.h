@@ -10,20 +10,27 @@ class Table{
     private:
 
     std::string name;
-    unsigned int max_id;
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
     std::vector<std::string> col_types;
-    static const std::list<std::string> ALLOWED_TYPES;
+    static const std::list<std::string> ALLOWED_TYPES; //potentially delete
     std::list<std::string> primary_keys;
-    bool auto_id_flag;
+    std::vector<int> indexes;
+    unsigned int max_id;
 
-    void loop_cols(Record& rec, std::function<void(const std::string&, Data&)> fn)
+    bool auto_id_flag; //delete
+
+    void loop_cols(Record& rec, std::function<void(const std::string&, Data&)> fn, bool ignore_id = true)
     {
         for(auto i = 0; i < rec.contents.size(); i++){
-            fn(col_types.at(i), *rec.contents.at(i));
+            auto& col = col_types.at(i);
+            if(ignore_id && auto_id_flag && col == "id"){
+                continue;
+            }
+            fn(col, *rec.contents.at(i));
         }
     }
+
 
     //helper functions:>
     bool is_allowed(std::string type);
@@ -48,7 +55,7 @@ class Table{
         //getters:
         std::vector<std::string> get_cols() const {return col_names;};
         std::vector<std::string> get_coltypes()const {return col_types;};
-        unsigned int get_col_num() const {return col_names.size();}
+        unsigned int get_col_num() const {return auto_id_flag ? col_names.size()-1 : col_names.size();}
         unsigned int get_row_num() const {return records.size();}
 
 
@@ -136,17 +143,6 @@ class Table{
 
 const std::list<std::string> Table::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
-//2 functions to pass data arguments into functions -depracated
-/* template<typename T,typename Arg>
-std::unique_ptr<Data> put(Arg a){
-    return std::unique_ptr<Data>(dynamic_cast<Data*>(new T(a)));
-    }
-
-template<typename T>
-std::unique_ptr<Data> put(){
-    return std::unique_ptr<Data>(dynamic_cast<Data*>(new T()));
-    } */
-
 
 /* bool operator==(const Table &lhs, const Table &rhs){
     if(lhs.get_col_num() != rhs.get_col_num() && lhs.get_row_num() != rhs.get_row_num()){return false;}
@@ -168,8 +164,6 @@ bool Table::operator==(const Table &rhs){
     }
     return true;
 };
-
-
 
 
 //HELPER PRIVATE FUNCTIONS
