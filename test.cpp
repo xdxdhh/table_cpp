@@ -47,7 +47,7 @@ TEST(BasicFunctionality, Records){
     t.add_record(String("Anna"), Int(20), Bool(true));
     t.add_record(String("Anna"), Int(20), Bool(true));
     EXPECT_THROW(t.add_record(String("Anna"), Int(20), Bool(true), String("A")), std::invalid_argument);
-    //EXPECT_THROW(t.add_record(Blank(), Blank(), Blank()), std::invalid_argument);  TBD NELZE UDELAT JEN blank radek
+    //EXPECT_THROW(t.add_record(Blank(), Blank(), Blank()), std::invalid_argument);  //TBD NELZE UDELAT JEN blank radek
     t.add_record(Blank(), Int(40), Bool(true));
     //EXPECT_THROW(t.add_record(Int(25)), std::invalid_argument);
 }
@@ -63,7 +63,6 @@ TEST(AdvancedFunctionality, Find){
 
     Table empty;
     auto ctable = t.find("name", String("Bob")); //should return an empty table
-    cout << "printing ctable: " << ctable << endl;
     ctable.delete_col("name");
     ctable.delete_col("age");
     ctable.delete_col("sex"); 
@@ -74,12 +73,7 @@ TEST(AdvancedFunctionality, Find){
     t.delete_col("age");
     t.delete_col("sex");
     EXPECT_TRUE(empty == t) << "Tables" << empty << " " << t << "are not equal.";
-    empty.describe();
-    t.describe();
-
     EXPECT_THROW(t.add_record(String("Tom"), Int(66), Bool(false)), std::invalid_argument);
-
-
     EXPECT_THROW(auto y = t.find("name", String("Tom")), std::invalid_argument);
 
     //y.print();

@@ -42,21 +42,19 @@ int main(int argc, char const *argv[])
     //auto d = t.find("jmeno", String("Martin")).find("vek", Int(20)) ;
     //d.print();
 
-    Table t;
+    Table t("human");
     t.add_cols({"name", "String", "age", "Int", "sex", "Bool"});
     t.add_record(String("Anna"), Int(20), Bool(true));
     t.add_record(String("Anna"), Int(20), Bool(true));
 
-    auto ctable = t.find("name", String("Bob")); //should return an empty table
-    cout << "printing ctable: " << ctable << endl;
-    ctable.describe();
-    ctable.delete_col("name");
-    cout << ctable << endl;
-    ctable.describe();
-    ctable.delete_col("age");
-    cout << ctable << endl;
-    ctable.delete_col("sex");
-    cout << ctable << endl;
+    t.print();
+    t.describe();
+    t.rename_col("name", "jmeno");
+    t.print();
+    t.describe();
+
+    t.delete_cols({"age", "sex"});
+    t.print();
 
 }
 

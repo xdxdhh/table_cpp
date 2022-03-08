@@ -47,6 +47,10 @@ Bold :
 
 
 
+general notes:
+
+-při loadování dat dát možnost volby vlastního id sloupce, v tom případě by se nevytvářel žádný vlastní 
+
 
 
 # Table Class
@@ -61,6 +65,11 @@ Column of blanks cannot be created
 -__t.add_cols(names of columns)__ --adds multiple columns\
 example: t.add_cols({"sex", "Bool", "name", "String"});  
 allowed types(see 4.Data types) are checked when adding column  
+-__t.delete_col(column_name)__ -- deletes one col from all records  
+-__t.delete_cols()__ --   delete multiple columns               TBD 
+example: t.delete_cols({"name","age","color"});
+-__t.rename_col()__  -- rename one column
+
 
 
 -__t.get_cols()__ --returns vector with names of columns  
@@ -92,12 +101,6 @@ For deleting just one record, ids can be used, e.g. t.delete_record("id", 2);
 
 -__t.clear_records()__ --deletes all records, leaves an empty table with cols  
 
-TBD FUTURE:
--__t.delete_col(column_name)__ -- deletes one col from all records  
-
-__t.delete_cols()__ --   TBD  
-
-t.rename_col()  -- renames one columns  TBD  
 
 
 ### 3. Working with multiple tables

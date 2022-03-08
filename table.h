@@ -2,30 +2,42 @@
 #include "record.h"
 #include <iostream>
 #include <stdexcept>
-#include <stdexcept>
+#include <functional>
 
 
 class Table{
 
     private:
 
+    std::string name;
     unsigned int max_id;
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
     std::vector<std::string> col_types;
     static const std::list<std::string> ALLOWED_TYPES;
+    std::list<std::string> primary_keys;
+    bool auto_id_flag;
+
+    void loop_cols(Record& rec, std::function<void(const std::string&, Data&)> fn)
+    {
+        for(auto i = 0; i < rec.contents.size(); i++){
+            fn(col_types.at(i), *rec.contents.at(i));
+        }
+    }
 
     //helper functions:>
     bool is_allowed(std::string type);
     int get_col_index(std::string colname);
 
     public:
-
         //basic table managing functions
         Table();
+        Table(std::string name);
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
         void delete_col(std::string colname);
+        void delete_cols(std::vector<std::string> col_names);
+        void rename_col(std::string oldname, std::string newname);
         bool operator==(const Table &rhs);
 
         //descriptive functions:
@@ -85,12 +97,6 @@ class Table{
             auto rec = std::make_unique<Record>();
             rec->add_data(std::make_unique<Int>(max_id+1));
             max_id++;
-            //rec->print();
-            //for(auto i = 0; i < size; i++ ){
-                //std::string type = col_types.at(i); //TBD Vyjimka pro spatny typ
-                //if(d.at(i)->type() != type) {} TBD
-
-
             using discard = std::unique_ptr<Data>[];
             // https://en.cppreference.com/w/cpp/language/fold
             // https://en.cppreference.com/w/cpp/language/operator_other#Built-in_comma_operator
@@ -100,9 +106,12 @@ class Table{
                 rec->add_data(std::move(std::unique_ptr<Data>(new args(std::move(d)))))
             ),void() ,nullptr )...};
 
-            //records.push_back(std::move(rec));
-            add_record(std::move(rec));
+            add_record(std::move(rec)); //bad data type is checked here
         }
+
+
+        //https://stackoverflow.com/questions/21180346/variadic-template-unpacking-arguments-to-typename
+        //https://stackoverflow.com/questions/12515616/expression-contains-unexpanded-parameter-packs/12515637#12515637
 
         friend std::ostream& operator<<(std::ostream& os,const Table &t){
             os << "-" << std::endl;
@@ -193,6 +202,12 @@ Table::Table():max_id(0){
     col_types.push_back("Int");
 }
 
+Table::Table(std::string name):max_id(0),name(name){
+    std::cout << "Inicialization of table " << name << " succesful." << std::endl;
+    col_names.push_back("id");
+    col_types.push_back("Int");
+}
+
 
 void Table::add_col(std::string name, std::string type){ 
     for(const auto& x : col_names){
@@ -230,6 +245,18 @@ void Table::delete_col(std::string colname){
     col_types.erase(col_types.begin() + index );
 };
 
+void Table::delete_cols(std::vector<std::string> col_names){
+    for(auto &col : col_names){
+        delete_col(col);
+    }
+};
+
+void Table::rename_col(std::string oldname, std::string newname){
+    int index = get_col_index(oldname);
+    col_names.at(index) = newname;
+};
+
+
 
 //RECORDS MANAGEMENT:
 
@@ -247,7 +274,6 @@ void Table::delete_record(const std::string & colname, const Data & d){
     }
 }
 
-
 void Table::clear_records(){
     records.clear();
     max_id = 0;
@@ -256,12 +282,20 @@ void Table::clear_records(){
 
 void Table::add_record(std::unique_ptr<Record> rec){
     if(get_col_num() != rec->contents.size()) {throw "Number of arguments( TBD ) does not match number of columns. Record not added.";};
-    for(auto i = 0; i < get_col_num(); i++){
-        std::string coltype = col_types.at(i);
-        if(rec->contents.at(i)->type() != coltype && rec->contents.at(i)->type() != "Blank"){
-            std::cout << "column types doesnt match: " <<  col_types.at(i) << rec->contents.at(i)->type() <<std::endl;
+    int blanks = 0;
+    loop_cols(*rec, [&](const std::string& coltype, Data& data){
+        if(data.type() != coltype && data.type() != "Blank"){
+            std::cout << "column types doesnt match: " <<  coltype << data.type() <<std::endl;
             throw std::invalid_argument("Data doesnt match column types.");
         }
+        if(data.type() == "Blank"){ //check if whole record is Blank by counting blanks 
+            blanks ++;
+        }
+    });
+    std::cout << "blanks: " << blanks << std::endl;
+    std::cout << "col_num" << get_col_num() << std::endl;
+    if(blanks == get_col_num()){
+        throw std::invalid_argument("Cannot add column containing only Blank data type.");
     }
     records.push_back(std::move(rec));
 }
