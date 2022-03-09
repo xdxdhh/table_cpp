@@ -5,6 +5,8 @@
 
 class Record{
 
+    unsigned int index;
+
     public:
     std::vector<std::unique_ptr<Data>> contents; //public or friend?
 
@@ -13,6 +15,8 @@ class Record{
     ~Record() = default;
     Record(const Record &other);
     void delete_self();
+    void set_index(unsigned int i){index = i;};
+    unsigned int get_index(){return index;};
     
     //data management:
     void add_data(std::unique_ptr<Data> d = nullptr);

@@ -44,17 +44,23 @@ int main(int argc, char const *argv[])
 
     Table t("human");
     t.add_cols({"name", "String", "age", "Int", "sex", "Bool"});
-    t.add_record(String("Anna"), Int(20), Bool(true));
+    t.add_record(String("Anna"), Int(20), Bool(false));
     t.add_record(String("Anna"), Int(20), Bool(true));
 
     t.print();
     t.describe();
-    t.rename_col("name", "jmeno");
+    t.delete_col("age");
+    t.print();
+    t.delete_record("sex", Bool(false));
+    t.print();
+    t.add_record(String("Martin"), Blank());
+    t.print();
+    /* t.rename_col("name", "jmeno");
     t.print();
     t.describe();
 
     t.delete_cols({"age", "sex"});
-    t.print();
-
+    t.print(); 
+ */
 }
 

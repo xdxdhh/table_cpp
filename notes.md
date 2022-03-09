@@ -54,6 +54,7 @@ general notes:
 
 Task list:
 implementace indexu
+--index vlastnost recordu?
 
 
 # Table Class

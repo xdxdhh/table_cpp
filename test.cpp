@@ -12,7 +12,7 @@ TEST(ColumnTests, BasicAssertions) {
     Table t;
     t.add_col("vek","Int");
     t.add_col("jmeno","String");
-    std::vector<std::string> vec = {"Int", "Int", "String"};
+    std::vector<std::string> vec = {"Int", "String"};
     auto cols = t.get_coltypes();
     
     EXPECT_EQ(cols.size(),vec.size());
@@ -22,15 +22,14 @@ TEST(ColumnTests, BasicAssertions) {
     }
     //adding already existing col should trow:
     EXPECT_THROW(t.add_col("vek","Int"), std::invalid_argument);
-    EXPECT_THROW(t.add_col("id","String"), std::invalid_argument);
-    //adding anoter id column should throw 
+
 }
 
-TEST(BasicFunctionality, Columnns) {
+TEST(BasicFunctionality, Columns) {
     Table t;
     Table d;
     EXPECT_TRUE(t == d);
-    EXPECT_EQ(t.get_col_num(), 1);
+    EXPECT_EQ(t.get_col_num(), 0);
     EXPECT_EQ(t.get_row_num(), 0);
     t.add_cols({"name", "String", "age", "Int", "sex", "Bool"});
     EXPECT_THROW(t.add_col("hah", "Blank"), std::invalid_argument);
@@ -47,9 +46,9 @@ TEST(BasicFunctionality, Records){
     t.add_record(String("Anna"), Int(20), Bool(true));
     t.add_record(String("Anna"), Int(20), Bool(true));
     EXPECT_THROW(t.add_record(String("Anna"), Int(20), Bool(true), String("A")), std::invalid_argument);
-    EXPECT_THROW(t.add_record(Blank(), Blank(), Blank()), std::invalid_argument);  //TBD NELZE UDELAT JEN blank radek
+    EXPECT_THROW(t.add_record(Blank(), Blank(), Blank()), std::invalid_argument); 
     t.add_record(Blank(), Int(40), Bool(true));
-    //EXPECT_THROW(t.add_record(Int(25)), std::invalid_argument);
+    EXPECT_THROW(t.add_record(Int(25)), std::invalid_argument);
 }
 
 TEST(AdvancedFunctionality, Find){
