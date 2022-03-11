@@ -55,6 +55,8 @@ int main(int argc, char const *argv[])
     t.print();
     t.add_record(String("Martin"), Blank());
     t.print();
+    t.truncate();
+    t.print();
     /* t.rename_col("name", "jmeno");
     t.print();
     t.describe();

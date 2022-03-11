@@ -3,12 +3,14 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <columns.h>
 
 
 class Table{
 
     private:
 
+    std::unique_ptr<Columns> Cols;
     std::string name;
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
@@ -24,7 +26,6 @@ class Table{
             fn(col, *rec.contents.at(i));
         }
     }
-
 
     //helper functions:>
     bool is_allowed(std::string type);
@@ -315,7 +316,7 @@ void Table::truncate(){
     int i = 1;
     for(auto& rec : records){
         std::cout << "truncationg" << std::endl;
-        rec->contents.at(0) = std::make_unique<Int>(i);
+        rec->set_index(i);
         i++;  
     }
 }
