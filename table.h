@@ -195,7 +195,6 @@ void Table::add_col(std::string name, std::string type){
     }
     col_names.push_back(name);
     col_types.push_back(type);
-    std::cout << col_names.size() << std::endl;
     std::cout << "Column " << name << " added." << std::endl;
     for(auto& i : records){
         i->add_data();
