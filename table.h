@@ -10,7 +10,7 @@ class Table{
 
     private:
 
-    std::unique_ptr<Columns> Cols;
+    std::unique_ptr<Columns> columns;
     std::string name;
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
@@ -115,16 +115,6 @@ class Table{
 
 const std::list<std::string> Table::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
-
-/* bool operator==(const Table &lhs, const Table &rhs){
-    if(lhs.get_col_num() != rhs.get_col_num() && lhs.get_row_num() != rhs.get_row_num()){return false;}
-    for(auto i = 0; i < lhs.get_row_num(); i++){
-        if(lhs.records.at(i) != rhs.records.at(i))
-            return false;
-    }
-    return true;
-}
- */
 
 bool Table::operator==(const Table &rhs){
     if(this->get_col_num() != rhs.get_col_num() || this->get_row_num() != rhs.get_row_num()){return false;}
