@@ -260,7 +260,7 @@ void Table::describe() const{
 void Table::truncate(){ 
     int i = 1;
     for(auto& rec : records){
-        std::cout << "truncationg" << std::endl;
+        //std::cout << "truncationg" << std::endl;
         rec->set_index(i);
         i++;  
     }
@@ -270,12 +270,13 @@ void Table::truncate(){
 Table Table::find(const std::string & colname, const Data & d){   //find returns table containing all rows that contain data d in column colname
     //getting index of column:
     int index = columns.get_col_index(colname);
-    if(index == -1){throw std::invalid_argument("Colname to find doesnt exist in the table.");};
     //search
     Table result;
     //copying col names
-    result.col_names = col_names;
-    result.col_types = col_types;
+    for(const auto& col : this->get_cols()){
+        result.add_col(col.name, col.type);
+    }
+
 
     for(const auto& rec : records){
         if(*rec->contents.at(index) == d){
@@ -285,3 +286,4 @@ Table Table::find(const std::string & colname, const Data & d){   //find returns
     }
     return result;
 }
+
