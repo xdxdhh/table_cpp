@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <list>
 
 //add allowed types here?
 class Columns{
@@ -16,8 +17,10 @@ class Columns{
 
         std::vector<column> cols;
         std::map<std::string, std::string> foreign_keys;
+        static const std::list<std::string> ALLOWED_TYPES; 
+        bool is_allowed(std::string type);
 
-        void check_column_existence(std::string name, std::string msg) const;
+        void check_column_existence(std::string name, bool expected, std::string msg) const;
         bool colname_compare(std::string lhs, std::string rhs) const;
 
     public:
@@ -26,9 +29,16 @@ class Columns{
         bool has_primary_key() const;
         void set_primary(std::string name);
         bool is_primary(std::string name) const;
-
+        int get_colnum() const {return cols.size();};
+        std::vector<column> get_cols() const {return cols;};
+        std::vector<std::string> get_colnames() const;
+        std::vector<std::string> get_coltypes() const;
+        int get_col_index(std::string colname) const;
+        void rename_col(std::string oldname, std::string newname);
         
 };
+
+const std::list<std::string> Columns::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
 
 std::string str_to_lower(std::string s) {
@@ -38,17 +48,29 @@ std::string str_to_lower(std::string s) {
     return s;
 }
 
+bool Columns::is_allowed(std::string type){
+    for(const auto& t : ALLOWED_TYPES){
+        if(type == t)
+            return true;
+    }
+    return false;
+}
+
 void Columns::add_column(std::string name, std::string type){
     //check if type is in allowed types TBD 
-    check_column_existence(name, " already exists");
+    if(!is_allowed(type)){throw std::invalid_argument("Column of type " + type + " is not allowed in the table.");};
+    std::cout << "adding column.";
+    check_column_existence(name, false, " already exists");
     auto& new_col = cols.emplace_back();
     new_col.name = name;
     new_col.primary_key_flag = false;
     new_col.type = type;
+    std::cout << "Column " << name << " added." <<std::endl;
 }
 
 void Columns::delete_column(std::string name){
-    check_column_existence(name, " was not found");
+    check_column_existence(name, true, " was not found");
+    //check if it isnt a part of primary key TBD
     for(auto it = cols.begin(); it != cols.end(); it++){
         if(it->name == name){
             cols.erase(it);
@@ -66,7 +88,7 @@ bool Columns::has_primary_key() const{
 }
 
 void Columns::set_primary(std::string name){
-    check_column_existence(name, " was not found");
+    check_column_existence(name, true, " was not found");
     for(auto& col : cols){
         if(col.name == name)
             col.primary_key_flag = true;
@@ -74,17 +96,23 @@ void Columns::set_primary(std::string name){
 }
 
 bool Columns::is_primary(std::string name) const{
-    check_column_existence(name, " was not found");
+    check_column_existence(name, true, " was not found");
     for(const auto& col : cols){
         if(col.name == name)
             return col.primary_key_flag;
     }
+    return false;
 }
 
-void Columns::check_column_existence(std::string name, std::string msg) const{
+void Columns::check_column_existence(std::string name, bool expected, std::string msg) const{ //bool, vracet true pokud existuje, false pokud neexistuje
+    bool existence_flag = false;
     for(const auto& col : cols){ //udelat z toho const_iterate_cols a iterate_cols?
-        if(str_to_lower(col.name) == str_to_lower(name))
-            throw std::invalid_argument("Column of name " + name + msg );
+        if(str_to_lower(col.name) == str_to_lower(name)){
+            existence_flag = true;
+        }
+    }
+    if(existence_flag != expected){
+        throw std::invalid_argument("Column of name " + name + msg );
     }
 };
 
@@ -94,3 +122,39 @@ bool Columns::colname_compare(std::string lhs, std::string rhs) const{
         return true;
     return false;
 }
+
+std::vector<std::string> Columns::get_colnames() const{
+    std::vector<std::string> colnames;
+    for(const auto& col : cols){
+        colnames.push_back(col.name);
+    }
+    return colnames;
+}
+
+std::vector<std::string> Columns::get_coltypes() const{
+    std::vector<std::string> colnames;
+    for(const auto& col : cols){
+        colnames.push_back(col.type);
+    }
+    return colnames;
+}
+
+int Columns::get_col_index(std::string colname) const{
+    check_column_existence(colname, true, " doesnt exist. ");
+    for(auto i = 0; i < cols.size(); i++){
+        if(cols.at(i).name == colname){
+            return i;
+        }
+    }
+}
+
+
+void Columns::rename_col(std::string oldname, std::string newname){
+    check_column_existence(oldname, true, "doesnt exist. ");
+    for(auto& col : cols){
+        if(col.name == oldname){
+            col.name = newname;
+        }
+    }
+};
+

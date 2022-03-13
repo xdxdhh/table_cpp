@@ -3,33 +3,29 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
-#include <columns.h>
-
+#include "columns.h"
 
 class Table{
 
     private:
 
-    std::unique_ptr<Columns> columns;
+    Columns columns;
     std::string name;
     std::list<std::unique_ptr<Record>> records; 
     std::vector<std::string> col_names;
     std::vector<std::string> col_types;
-    static const std::list<std::string> ALLOWED_TYPES; //potentially delete
     std::list<std::string> primary_keys;
 
 
     void loop_cols(Record& rec, std::function<void(const std::string&, Data&)> fn)
     {
         for(auto i = 0; i < rec.contents.size(); i++){
-            auto& col = col_types.at(i);
+            std::string col = columns.get_cols().at(i).type;
             fn(col, *rec.contents.at(i));
         }
     }
 
     //helper functions:>
-    bool is_allowed(std::string type);
-    int get_col_index(std::string colname);
     std::list<unsigned int> get_index_list();
     unsigned int get_max_index();
 
@@ -41,7 +37,7 @@ class Table{
         void add_cols(std::vector<std::string> col_names_and_types);
         void delete_col(std::string colname);
         void delete_cols(std::vector<std::string> col_names);
-        void rename_col(std::string oldname, std::string newname);
+        void rename_col(std::string oldname, std::string newname){columns.rename_col(oldname,newname);};
         bool operator==(const Table &rhs);
 
         //descriptive functions:
@@ -51,9 +47,10 @@ class Table{
 
         //getters:
         std::vector<std::string> get_cols() const {return col_names;};
-        std::vector<std::string> get_coltypes()const {return col_types;};
-        unsigned int get_col_num() const {return col_names.size();}
+        std::vector<std::string> get_coltypes()const {return columns.get_coltypes();};
         unsigned int get_row_num() const {return records.size();}
+        unsigned int get_col_num() const {return columns.get_colnum();}
+
 
 
         //record management:
@@ -70,8 +67,7 @@ class Table{
         template<typename... args>  //https://stackoverflow.com/questions/29972563/how-to-construct-a-vector-with-unique-pointers
         void add_record(args&&...d){
             auto size = sizeof...(d);
-            std::cout << size << get_col_num() << std::endl;
-            if(size != get_col_num())
+            if(size != columns.get_colnum())
                 throw std::invalid_argument("Number of arguments( TBD ) does not match number of columns. Record not added.");
 
             auto rec = std::make_unique<Record>();
@@ -96,9 +92,10 @@ class Table{
             os << "-" << std::endl;
             os << "TABLE" <<std::endl;
             os << "index" << "   ";
-            for(auto i = 0; i < t.get_col_num(); i++){
-                os << t.col_names.at(i)<< "   ";
-            } 
+            auto colnames = t.columns.get_colnames();
+            for(const auto& colname : colnames){
+                os << colname << "   ";
+            }
             os << std::endl;
             int j = 0;
             for(auto i = t.records.begin(); i != t.records.end(); i++ ){
@@ -109,15 +106,11 @@ class Table{
             os << "-" << std::endl;
             return os;
         };
-
- 
 };
-
-const std::list<std::string> Table::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
 
 bool Table::operator==(const Table &rhs){
-    if(this->get_col_num() != rhs.get_col_num() || this->get_row_num() != rhs.get_row_num()){return false;}
+    if(this->columns.get_colnum() != rhs.columns.get_colnum() || this->get_row_num() != rhs.get_row_num()){return false;}
     auto it1 = this->records.cbegin();
     auto it2 = rhs.records.cbegin();
     for(; it1 != this->records.cend(); it1++, it2++){
@@ -127,28 +120,6 @@ bool Table::operator==(const Table &rhs){
     return true;
 };
 
-
-//HELPER PRIVATE FUNCTIONS
-bool Table::is_allowed(std::string type){
-    for(const auto& t : ALLOWED_TYPES){
-        if(type == t)
-            return true;
-    }
-    return false;
-}
-
-// navic se da do teto funkce zahrnout i exception kdyz nenajde TBD 
-int Table::get_col_index(std::string colname)
-{
-    // mozna by slo vyuzit std::find_if
-    int index = -1;
-    for(auto i = 0; i < get_col_num(); i++){
-        if(col_names.at(i) == colname){
-            index = i;
-        }
-    }
-    return index;
-}
 
 std::list<unsigned int> Table::get_index_list(){
     std::list<unsigned int> index_list;
@@ -176,16 +147,7 @@ Table::Table(std::string name):name(name){
 
 
 void Table::add_col(std::string name, std::string type){ 
-    for(const auto& x : col_names){
-        if(x == name)
-            throw std::invalid_argument("Column of this name already exists.");
-    }
-    if(is_allowed(type) == false){
-        throw std::invalid_argument("Invalid type name.");
-    }
-    col_names.push_back(name);
-    col_types.push_back(type);
-    std::cout << "Column " << name << " added." << std::endl;
+    columns.add_column(name, type);
     for(auto& i : records){
         i->add_data();
     }
@@ -200,15 +162,11 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
 }
 
 void Table::delete_col(std::string colname){
-    
-    //TBD kontrola jestli colname nepatri do primary key 
-    int index = get_col_index(colname);
-    if(index == -1){throw(std::invalid_argument("column to delete not found in the table"));} //TBD pridat do get_col_index
+    int index = columns.get_col_index(colname);
+    columns.delete_column(colname);
     for(auto &rec : records){
         rec->delete_data(index);
     }
-    col_names.erase(col_names.begin() + index);
-    col_types.erase(col_types.begin() + index);
 };
 
 void Table::delete_cols(std::vector<std::string> col_names){
@@ -217,10 +175,7 @@ void Table::delete_cols(std::vector<std::string> col_names){
     }
 };
 
-void Table::rename_col(std::string oldname, std::string newname){
-    int index = get_col_index(oldname);
-    col_names.at(index) = newname;
-};
+
 
 
 //RECORDS MANAGEMENT:
@@ -228,7 +183,7 @@ void Table::rename_col(std::string oldname, std::string newname){
 //t.delete_record('jmeno', 'Petr');
 
 void Table::delete_record(const std::string & colname, const Data & d){
-    int index = get_col_index(colname);
+    int index = columns.get_col_index(colname);
     if(index == -1){throw std::invalid_argument("Colname to delete doesnt exist");};
 
     for(auto i = records.begin(); i != records.end(); i++){
@@ -246,8 +201,8 @@ void Table::clear_records(){
 
 
 void Table::add_record(std::unique_ptr<Record> rec){
-    //std::cout << get_col_num() << rec->contents.size() << std::endl;
-    if(get_col_num() != rec->contents.size()) {throw "Number of arguments( TBD ) does not match number of columns. Record not added.";};
+    std::cout << columns.get_colnum() << rec->contents.size() << std::endl;
+    if(columns.get_colnum() != rec->contents.size()) {throw "Number of arguments( TBD ) does not match number of columns. Record not added.";};
     for(const auto& r : rec->contents){
         if(r == nullptr){
             throw std::invalid_argument("Cannot add nullptr as data. Use Blank data type instead.");
@@ -263,7 +218,7 @@ void Table::add_record(std::unique_ptr<Record> rec){
             blanks ++;
         }
     });
-    if(blanks == get_col_num()){
+    if(blanks == columns.get_colnum()){
         throw std::invalid_argument("Cannot add column containing only Blank data type.");
     }
     records.push_back(std::move(rec));
@@ -280,15 +235,16 @@ void Table::print() const{ //pretty printing
 void Table::describe() const{
     std::cout << "-" << std::endl;
     std::cout << "DESCRIBE: Table " << std::endl; //TBD pridat jmeno table
-    std::cout << "Number of cols:" << get_col_num() << std::endl;
+    std::cout << "Number of cols:" << columns.get_colnum() << std::endl;
     std::cout << "Number of records:" << get_row_num() << std::endl;
     auto cols = get_cols();
     std::cout << "Column names:" ;
-    for(const auto& col : cols){
-        std::cout << col <<", ";
+    auto colnames = columns.get_colnames();
+    for(const auto& colname : colnames){
+        std::cout << colname <<", ";
     }
     std::cout << std::endl;
-    auto coltypes = get_coltypes();
+    auto coltypes = columns.get_coltypes();
     std::cout << "Column types:" ;
     for(const auto& coltype : coltypes){
         std::cout << coltype <<", ";
@@ -313,7 +269,7 @@ void Table::truncate(){
 
 Table Table::find(const std::string & colname, const Data & d){   //find returns table containing all rows that contain data d in column colname
     //getting index of column:
-    int index = get_col_index(colname);
+    int index = columns.get_col_index(colname);
     if(index == -1){throw std::invalid_argument("Colname to find doesnt exist in the table.");};
     //search
     Table result;
