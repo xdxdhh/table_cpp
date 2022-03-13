@@ -70,12 +70,18 @@ void Columns::add_column(std::string name, std::string type){
 
 void Columns::delete_column(std::string name){
     check_column_existence(name, true, " was not found");
+    std::cout << "size of cols: " << cols.size() << std::endl;
     //check if it isnt a part of primary key TBD
-    for(auto it = cols.begin(); it != cols.end(); it++){
+    /* auto it = cols.begin();
+    while(it != cols.end()){
         if(it->name == name){
-            cols.erase(it);
+            it = cols.erase(it);
         }
-    }
+        else{
+            it++;
+        }
+    } */
+    std::erase_if(cols, [&](auto const & col){return col.name == name;});
     //delete from foreign key map tbd
 }
 
@@ -146,6 +152,7 @@ int Columns::get_col_index(std::string colname) const{
             return i;
         }
     }
+    return -1;
 }
 
 

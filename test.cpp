@@ -62,11 +62,14 @@ TEST(AdvancedFunctionality, Find){
 
     Table empty;
     auto ctable = t.find("name", String("Bob")); //should return an empty table
+    cout << "benchmark" << endl;
     ctable.delete_col("name");
     ctable.delete_col("age");
-    ctable.delete_col("sex"); 
+    ctable.delete_col("sex"); //ok
 
+    cout << "benchmark" << endl;
     EXPECT_TRUE(empty == ctable) << "Tables" << empty << " " << ctable << "are not equal.";
+    cout << "benchmark" << endl;
     t.delete_record("age", Int(20)); //should be empty aswell
     t.delete_col("name");
     t.delete_col("age");

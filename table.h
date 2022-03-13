@@ -44,9 +44,8 @@ class Table{
         void print() const;
         void describe() const;
 
-
         //getters:
-        std::vector<std::string> get_cols() const {return col_names;};
+        std::vector<std::string> get_colnames() const {return columns.get_colnames();};
         std::vector<std::string> get_coltypes()const {return columns.get_coltypes();};
         unsigned int get_row_num() const {return records.size();}
         unsigned int get_col_num() const {return columns.get_colnum();}
@@ -110,7 +109,8 @@ class Table{
 
 
 bool Table::operator==(const Table &rhs){
-    if(this->columns.get_colnum() != rhs.columns.get_colnum() || this->get_row_num() != rhs.get_row_num()){return false;}
+    if(this->get_col_num() != rhs.get_col_num() || this->get_row_num() != rhs.get_row_num()){return false;}
+    std::cout << "x" << std::endl;
     auto it1 = this->records.cbegin();
     auto it2 = rhs.records.cbegin();
     for(; it1 != this->records.cend(); it1++, it2++){
@@ -163,10 +163,13 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
 
 void Table::delete_col(std::string colname){
     int index = columns.get_col_index(colname);
+    std::cout << "index of col to delete: " << index << colname << std::endl;
     columns.delete_column(colname);
+    std::cout << "hi" << std::endl;
     for(auto &rec : records){
         rec->delete_data(index);
     }
+    std::cout << "Column " << colname << " deleted." << std::endl;
 };
 
 void Table::delete_cols(std::vector<std::string> col_names){
@@ -237,7 +240,7 @@ void Table::describe() const{
     std::cout << "DESCRIBE: Table " << std::endl; //TBD pridat jmeno table
     std::cout << "Number of cols:" << columns.get_colnum() << std::endl;
     std::cout << "Number of records:" << get_row_num() << std::endl;
-    auto cols = get_cols();
+    auto cols = get_colnames();
     std::cout << "Column names:" ;
     auto colnames = columns.get_colnames();
     for(const auto& colname : colnames){
@@ -272,18 +275,17 @@ Table Table::find(const std::string & colname, const Data & d){   //find returns
     int index = columns.get_col_index(colname);
     //search
     Table result;
-    //copying col names
-    for(const auto& col : this->get_cols()){
+    //copying col names and ypes
+    for(const auto& col : columns.get_cols()){
         result.add_col(col.name, col.type);
     }
-
-
     for(const auto& rec : records){
         if(*rec->contents.at(index) == d){
             // invoke copy constructor of the matched record and push it into the filtered table
             result.records.push_back(std::unique_ptr<Record>(new Record(*rec)));
         }    
     }
+    //std::cout << "find done." << std::endl;
     return result;
 }
 
