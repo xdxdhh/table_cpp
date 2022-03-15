@@ -59,7 +59,6 @@ bool Columns::is_allowed(std::string type){
 void Columns::add_column(std::string name, std::string type){
     //check if type is in allowed types TBD 
     if(!is_allowed(type)){throw std::invalid_argument("Column of type " + type + " is not allowed in the table.");};
-    std::cout << "adding column.";
     check_column_existence(name, false, " already exists");
     auto& new_col = cols.emplace_back();
     new_col.name = name;
@@ -70,17 +69,7 @@ void Columns::add_column(std::string name, std::string type){
 
 void Columns::delete_column(std::string name){
     check_column_existence(name, true, " was not found");
-    std::cout << "size of cols: " << cols.size() << std::endl;
     //check if it isnt a part of primary key TBD
-    /* auto it = cols.begin();
-    while(it != cols.end()){
-        if(it->name == name){
-            it = cols.erase(it);
-        }
-        else{
-            it++;
-        }
-    } */
     std::erase_if(cols, [&](auto const & col){return col.name == name;});
     //delete from foreign key map tbd
 }

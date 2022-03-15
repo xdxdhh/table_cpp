@@ -1,13 +1,26 @@
 #include "table.h"
 #include "iostream"
 #include <vector>
+#include "jsoncons/include/jsoncons/json.hpp"
+#include <fstream>
+#include <jsoncons_ext/jsonpath/jsonpath.hpp>
+#include <jsoncons_ext/bson/bson.hpp>
+#include <map>
+
 
 using namespace std;
+using namespace jsoncons;
+using jsoncons::jsonpath::json_query;
+namespace bson = jsoncons::bson;
+
 
 void print(Data &d)
 {
 
 }
+
+
+
 
 //#define put(type, value) std::unique_ptr<Data>(dynamic_cast<Data*>(new type(value)))
 //#define blank std::unique_ptr<Data>(dynamic_cast<Data*>(new Blank()))
@@ -15,6 +28,12 @@ void print(Data &d)
 
 int main(int argc, char const *argv[])
 {
+    map<string, function<unique_ptr<Data>(vector<Data::byte>)>> mapa;
+    mapa["Int"] = [](vector<Data::byte> v){return unique_ptr<Data>(new Int(byte_copy<int>(v)));};
+    mapa["Bool"] = [](vector<Data::byte> v){return unique_ptr<Data>(new Bool(byte_copy<bool>(v)));};
+    mapa["String"] = [](vector<Data::byte> v){return unique_ptr<Data>(new String(reinterpret_cast<char*>(v.data())));};
+    mapa["Blank"] = [](vector<Data::byte> v){return unique_ptr<Data>(new Blank());};
+
     /* Table t;
     t.add_col("vek","Int");
     t.add_cols({"pohlavi", "Bool", "jmeno", "String"});
@@ -42,7 +61,7 @@ int main(int argc, char const *argv[])
     //auto d = t.find("jmeno", String("Martin")).find("vek", Int(20)) ;
     //d.print();
 
-    Table t("human");
+    /* Table t("human");
     t.add_cols({"name", "String", "age", "Int", "sex", "Bool"});
     t.add_record(String("Anna"), Int(20), Bool(false));
     t.add_record(String("Anna"), Int(20), Bool(true));
@@ -56,7 +75,7 @@ int main(int argc, char const *argv[])
     t.add_record(String("Martin"), Blank());
     t.print();
     t.truncate();
-    t.print();
+    t.print(); */
     /* t.rename_col("name", "jmeno");
     t.print();
     t.describe();
@@ -64,5 +83,78 @@ int main(int argc, char const *argv[])
     t.delete_cols({"age", "sex"});
     t.print(); 
  */
+    std::string s = R"({"first":1,"second":2,"fourth":3,"fifth":4})";   
+
+    //cols: name age sex
+    json table1;
+    table1["name"] = "tablename";
+    std::vector<string> cols;
+    cols.push_back("age");
+    cols.push_back("name");
+    cols.push_back("sex");
+    std::vector<string> coltypes;
+    coltypes.push_back("int");
+    coltypes.push_back("string");
+
+    table1["cols"] = cols;
+    table1["coltypes"] = coltypes;
+    
+    cout << table1 << endl;
+
+    std::ofstream os("test.json");
+    os << pretty_print(table1);
+
+    std::ifstream is("test.json");
+    json j = json::parse(is); 
+    cout << j << endl;
+    std::vector<string> cols_new;
+    cout << j["cols"] << endl;
+    //auto it = j.find("name");
+    auto it = j.get_with_default("name", "name unknown");
+    cout << it << endl;
+    auto x = j.at_or_null("cols");
+
+    for(auto it = x.array_range().begin() ; it != x.array_range().end(); it++){
+        cout << (*it).as<string>() << endl;
+    }
+
+    /* cout << x.at(0) << endl;
+    string col1 = x.at(0).as<string>();
+    cout << col1 << endl; */
+    
+    //std::vector<std::unique_ptr<Data>> contents;
+    json record1;
+    record1["index"] = 1;
+    //record1["content"] = contents;
+
+    auto hodnota = Int(513).to_bytes();
+    std::vector<uint8_t> buffer;
+    bson::bson_bytes_encoder encoder(buffer);
+    encoder.begin_object(); // The total number of bytes comprising 
+                            // the bson document will be calculated
+    encoder.key("Int");
+    //std::vector<uint8_t> bstr = {'f','o','o','b','a','r'};
+    encoder.byte_string_value(hodnota); // default subtype is user defined
+    // or encoder.byte_string_value(bstr, 0x80); 
+    encoder.end_object();
+    encoder.flush();
+
+    std::cout << "(1)\n" << jsoncons::byte_string_view(buffer) << "\n";
+
+    //std::ofstream os("test.json");
+    ojson hh = bson::decode_bson<ojson>(buffer);
+    ojson test;
+    test["Data"] = hh;
+
+    cout << test << endl;
+    
+
+    //get type:
+    
+    auto vec = hh["Int"].as<std::vector<uint8_t>>();
+    
+    for (auto & v : vec) cout << (int)v << endl;
+    cout << byte_copy<Int>(vec).to_str() << endl;
+
 }
 

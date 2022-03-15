@@ -110,7 +110,6 @@ class Table{
 
 bool Table::operator==(const Table &rhs){
     if(this->get_col_num() != rhs.get_col_num() || this->get_row_num() != rhs.get_row_num()){return false;}
-    std::cout << "x" << std::endl;
     auto it1 = this->records.cbegin();
     auto it2 = rhs.records.cbegin();
     for(; it1 != this->records.cend(); it1++, it2++){
@@ -163,9 +162,7 @@ void Table::add_cols(std::vector<std::string> col_names_and_types){
 
 void Table::delete_col(std::string colname){
     int index = columns.get_col_index(colname);
-    std::cout << "index of col to delete: " << index << colname << std::endl;
     columns.delete_column(colname);
-    std::cout << "hi" << std::endl;
     for(auto &rec : records){
         rec->delete_data(index);
     }
@@ -179,8 +176,6 @@ void Table::delete_cols(std::vector<std::string> col_names){
 };
 
 
-
-
 //RECORDS MANAGEMENT:
 
 //t.delete_record('jmeno', 'Petr');
@@ -188,13 +183,7 @@ void Table::delete_cols(std::vector<std::string> col_names){
 void Table::delete_record(const std::string & colname, const Data & d){
     int index = columns.get_col_index(colname);
     if(index == -1){throw std::invalid_argument("Colname to delete doesnt exist");};
-
-    for(auto i = records.begin(); i != records.end(); i++){
-        if(*(*i)->contents.at(index) == d){
-            i = records.erase(i);
-            i--;
-        }
-    }
+    std::erase_if(records, [&](auto& rec){return *rec->contents.at(index) == d;});
 }
 
 void Table::clear_records(){
@@ -204,7 +193,6 @@ void Table::clear_records(){
 
 
 void Table::add_record(std::unique_ptr<Record> rec){
-    std::cout << columns.get_colnum() << rec->contents.size() << std::endl;
     if(columns.get_colnum() != rec->contents.size()) {throw "Number of arguments( TBD ) does not match number of columns. Record not added.";};
     for(const auto& r : rec->contents){
         if(r == nullptr){
@@ -231,7 +219,7 @@ void Table::add_record(std::unique_ptr<Record> rec){
 //DESCRIPTIVE FUNCTIONS:
 
 
-void Table::print() const{ //pretty printing 
+void Table::print() const{ //pretty printing 6
     std::cout << *this << std::endl;
 }
 

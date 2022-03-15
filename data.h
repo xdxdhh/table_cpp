@@ -7,9 +7,11 @@
 class Data
 {
     public:
+        using byte = uint8_t;
+
         virtual std::string type() const = 0 ;
         virtual std::string to_str() const = 0;
-        virtual std::vector<std::byte> to_bytes() const = 0;
+        virtual std::vector<Data::byte> to_bytes() const = 0;
         virtual std::unique_ptr<Data> clone() const = 0;
         //virtual void delete_self();
         //virtual ~Data();
@@ -30,17 +32,14 @@ bool operator==(const Data &lhs, const Data &rhs){
 }
 
 
-class Int : public Data{
+class Int : public Data {
     int _value;
     public:
         Int(int value) :_value(value){};
+        Int() = default;
         std::string type() const {return "Int";};
         std::string to_str() const {return std::to_string(_value);}
-        std::vector<std::byte> to_bytes() const {
-            auto v = std::vector<std::byte>(sizeof(_value)); 
-            std::copy(reinterpret_cast<const std::byte*>(&_value), reinterpret_cast<const std::byte*>(&_value) + sizeof(_value), v.data());
-            return v; 
-        }
+        std::vector<Data::byte> to_bytes() const {return byte_copy(&_value);}
         /* Int(const Int &other){
             _value = other._value;
         } */
@@ -57,8 +56,8 @@ class String : public Data{
         String(const char *value) :_value(value){};
         std::string type() const {return "String";};
         std::string to_str() const {return _value;};
-        std::vector<std::byte> to_bytes() const {
-            auto v = std::vector<std::byte>(_value.size()); 
+        std::vector<Data::byte> to_bytes() const {
+            auto v = std::vector<Data::byte>(_value.size()); 
             std::copy(_value.begin(),_value.end(), reinterpret_cast<char*>(v.data()));
             return v; 
         }
@@ -76,10 +75,8 @@ class Bool : public Data{
         Bool(bool value) :_value(value){};
         std::string type() const{return "Bool";};
         std::string to_str() const {return _value == false ? "0" : "1";};
-        std::vector<std::byte> to_bytes() const {
-            auto v = std::vector<std::byte>(1); 
-            v.at(0) = static_cast<const std::byte>(_value);
-            return v; 
+        std::vector<Data::byte> to_bytes() const {
+            return byte_copy(&_value);
         }
         /* Bool(const Bool &other){
             _value = other._value;
@@ -94,8 +91,8 @@ class Blank : public Data{
         //Blank(){};
         std::string type() const{return "Blank";};
         std::string to_str() const {return "null";};
-        std::vector<std::byte> to_bytes() const {
-            return std::vector<std::byte>();
+        std::vector<Data::byte> to_bytes() const {
+            return std::vector<Data::byte>();
         }
         //Blank(const Blank &other){}
         std::unique_ptr<Data> clone() const{
@@ -103,3 +100,24 @@ class Blank : public Data{
         }
         
 };
+
+
+
+template<typename Target>
+Target byte_copy(const vector<Data::byte>& to_copy){
+    Target t; 
+    size_t i = 0;
+    for(auto it = to_copy.begin(); it != to_copy.end() && i < sizeof(t); ++it, ++i){
+        reinterpret_cast<Data::byte*>(&t)[i] = *it;
+    }
+    return t;
+}
+
+
+template<typename T>
+std::vector<Data::byte> byte_copy(const T * t) {
+    auto v = std::vector<Data::byte>(sizeof(*t)); 
+    std::copy(reinterpret_cast<const Data::byte*>(t),
+        reinterpret_cast<const Data::byte*>(t) + sizeof(*t), v.data());
+    return v; 
+}
