@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <list>
 
+#ifndef COLUMNS_H
+#define COLUMNS_H
 //add allowed types here?
 class Columns{
     private:
@@ -16,14 +18,17 @@ class Columns{
         };
 
         std::vector<column> cols;
-        std::map<std::string, std::string> foreign_keys;
         static const std::list<std::string> ALLOWED_TYPES; 
-        bool is_allowed(std::string type);
 
+        bool is_allowed(std::string type);
         void check_column_existence(std::string name, bool expected, std::string msg) const;
         bool colname_compare(std::string lhs, std::string rhs) const;
 
     public:
+        std::map<std::string, std::string> foreign_keys; //getter or nah?
+
+
+
         void add_column(std::string name, std::string type);
         void delete_column(std::string name);
         bool has_primary_key() const;
@@ -31,6 +36,7 @@ class Columns{
         bool is_primary(std::string name) const;
         int get_colnum() const {return cols.size();};
         std::vector<column> get_cols() const {return cols;};
+        std::list<std::string> get_allowed_types() const {return ALLOWED_TYPES;};
         std::vector<std::string> get_colnames() const;
         std::vector<std::string> get_coltypes() const;
         int get_col_index(std::string colname) const;
@@ -154,3 +160,5 @@ void Columns::rename_col(std::string oldname, std::string newname){
     }
 };
 
+
+#endif

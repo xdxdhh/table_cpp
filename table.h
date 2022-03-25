@@ -4,6 +4,10 @@
 #include <stdexcept>
 #include <functional>
 #include "columns.h"
+#include "serializer.h"
+
+#ifndef TABLE_H
+#define TABLE_H
 
 class Table{
 
@@ -12,9 +16,6 @@ class Table{
     Columns columns;
     std::string name;
     std::list<std::unique_ptr<Record>> records; 
-    std::vector<std::string> col_names;
-    std::vector<std::string> col_types;
-    std::list<std::string> primary_keys;
 
 
     void loop_cols(Record& rec, std::function<void(const std::string&, Data&)> fn)
@@ -39,6 +40,11 @@ class Table{
         void delete_cols(std::vector<std::string> col_names);
         void rename_col(std::string oldname, std::string newname){columns.rename_col(oldname,newname);};
         bool operator==(const Table &rhs);
+
+        void serialize(){
+            Serializer s;
+            s.serialize_columns(this->columns);
+        };
 
         //descriptive functions:
         void print() const;
@@ -144,7 +150,7 @@ Table::Table(std::string name):name(name){
     std::cout << "Inicialization of table " << name << " succesful." << std::endl;
 }
 
-
+//t.add_col("Name", "String")
 void Table::add_col(std::string name, std::string type){ 
     columns.add_column(name, type);
     for(auto& i : records){
@@ -153,7 +159,7 @@ void Table::add_col(std::string name, std::string type){
 }
 
 
-//t.add_col("Vek", "Int", "Pohlavi", "Bool");
+//t.add_cols({"Vek", "Int", "Pohlavi", "Bool"});
 void Table::add_cols(std::vector<std::string> col_names_and_types){
     for(auto i = 0; i < col_names_and_types.size(); i = i+2){
         add_col(col_names_and_types.at(i), col_names_and_types.at(i+1));
@@ -277,3 +283,4 @@ Table Table::find(const std::string & colname, const Data & d){   //find returns
     return result;
 }
 
+#endif

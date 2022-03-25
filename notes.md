@@ -128,6 +128,8 @@ When adding data to table, correctness of types is checked, Blank data type can 
 # Record Class
 TBD\
 
+
+
 # Database structure
 
 ### Primary,unique and foreign key
@@ -145,3 +147,70 @@ t.reset_keys() --deletes all keys, created id column which serves as primary key
 More cols can be used as combined primary key.\
 Columns containing any part of primary key cannot be deleted.\
 Combination of primary key must be unique.           --cim kontrolovat uniqueness?
+
+
+
+### 4. JSON structure, loading and saving tables
+
+When saving a table, each record is transferred into json:
+    json Record:
+    "index" : 1
+    "data:" ["type" : "byte_data"]
+
+Then, all of the records are pushed into one json Records
+    json Records_class:
+        "Records:"
+            Record1:
+                "index" : 1
+                "data:" ["type" : "byte_data"]
+            Record2:
+                "index" : 1
+                "data:" ["type" : "byte_data"]
+            Record3:
+                "index" : 1
+                "data:" ["type" : "byte_data"]
+
+
+
+json Column:
+    "name" : col_name
+    "type" : col_type
+    "primary_key_flag" : 0
+
+json Columns:
+    "Columns":
+        Column 1: 
+            "name" : col_name
+            "type" : col_type
+            "primary_key_flag" : 0 
+        Column 2: 
+            "name" : col_name
+            "type" : col_type
+            "primary_key_flag" : 0 
+        Column 3: 
+            "name" : col_name
+            "type" : col_type
+            "primary_key_flag" : 0 
+
+json Columns_class:
+    "cols" : [
+        "Column 1": 
+            "name" : col_name
+            "type" : col_type
+            "primary_key_flag" : 0 
+        Column 2: 
+            "name" : col_name
+            "type" : col_type
+            "primary_key_flag" : 0 
+        Column 3: 
+            "name" : col_name
+            "type" : col_type
+            "primary_key_flag" : 0 
+    ]
+    "foreign keys:" [
+        "table_name" : "key_col"
+        "table_name" : "key_col"
+        "table_name" : "key_col"
+        "table_name" : "key_col"
+    ]
+    "allowed types": ["type1", "type2", "type3"]

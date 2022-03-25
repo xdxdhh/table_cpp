@@ -28,12 +28,6 @@ void print(Data &d)
 
 int main(int argc, char const *argv[])
 {
-    map<string, function<unique_ptr<Data>(vector<Data::byte>)>> mapa;
-    mapa["Int"] = [](vector<Data::byte> v){return unique_ptr<Data>(new Int(byte_copy<int>(v)));};
-    mapa["Bool"] = [](vector<Data::byte> v){return unique_ptr<Data>(new Bool(byte_copy<bool>(v)));};
-    mapa["String"] = [](vector<Data::byte> v){return unique_ptr<Data>(new String(reinterpret_cast<char*>(v.data())));};
-    mapa["Blank"] = [](vector<Data::byte> v){return unique_ptr<Data>(new Blank());};
-
     /* Table t;
     t.add_col("vek","Int");
     t.add_cols({"pohlavi", "Bool", "jmeno", "String"});
@@ -83,10 +77,10 @@ int main(int argc, char const *argv[])
     t.delete_cols({"age", "sex"});
     t.print(); 
  */
-    std::string s = R"({"first":1,"second":2,"fourth":3,"fifth":4})";   
+    //std::string s = R"({"first":1,"second":2,"fourth":3,"fifth":4})";   
 
     //cols: name age sex
-    json table1;
+    /* json table1;
     table1["name"] = "tablename";
     std::vector<string> cols;
     cols.push_back("age");
@@ -123,38 +117,41 @@ int main(int argc, char const *argv[])
     cout << col1 << endl; */
     
     //std::vector<std::unique_ptr<Data>> contents;
-    json record1;
+    /* json record1;
     record1["index"] = 1;
-    //record1["content"] = contents;
+    
 
     auto hodnota = Int(513).to_bytes();
     std::vector<uint8_t> buffer;
-    bson::bson_bytes_encoder encoder(buffer);
-    encoder.begin_object(); // The total number of bytes comprising 
+    bson::bson_bytes_encoder encoder(buffer); */
+    //encoder.begin_object(); // The total number of bytes comprising 
                             // the bson document will be calculated
-    encoder.key("Int");
+    //encoder.key("Int");
     //std::vector<uint8_t> bstr = {'f','o','o','b','a','r'};
-    encoder.byte_string_value(hodnota); // default subtype is user defined
+    //encoder.byte_string_value(hodnota); // default subtype is user defined
     // or encoder.byte_string_value(bstr, 0x80); 
-    encoder.end_object();
+/*     encoder.end_object();
     encoder.flush();
 
     std::cout << "(1)\n" << jsoncons::byte_string_view(buffer) << "\n";
-
+ */
     //std::ofstream os("test.json");
-    ojson hh = bson::decode_bson<ojson>(buffer);
+/*     ojson hh = bson::decode_bson<ojson>(buffer);
     ojson test;
     test["Data"] = hh;
 
     cout << test << endl;
-    
+     */
 
     //get type:
     
-    auto vec = hh["Int"].as<std::vector<uint8_t>>();
+/*     auto vec = hh["Int"].as<std::vector<uint8_t>>();
     
     for (auto & v : vec) cout << (int)v << endl;
-    cout << byte_copy<Int>(vec).to_str() << endl;
-
+    cout << Data::copy_from_bytes<Int>(vec).to_str() << endl; */
+    Table t;
+    t.add_cols({"Pohlavi", "Bool", "Vek", "Int", "Jmeno", "String"});
+    t.serialize();
+ 
 }
 
