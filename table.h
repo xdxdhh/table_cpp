@@ -43,8 +43,8 @@ class Table{
 
         void serialize(){
             Serializer s;
-            s.serialize_columns(this->columns);
-            s.deserialize_columns();
+            s.serialize_columns(this->columns, "columns.json");
+            s.deserialize_columns("columns.json");
         };
 
         //descriptive functions:

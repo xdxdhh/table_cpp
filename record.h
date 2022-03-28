@@ -3,6 +3,9 @@
 #include <memory>
 #include <iostream>
 
+#ifndef RECORD_H
+#define RECORD_H
+
 class Record{
 
     unsigned int index;
@@ -73,3 +76,5 @@ void Record::print() const{
     }
 }
 
+
+#endif

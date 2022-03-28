@@ -214,3 +214,9 @@ json Columns_class:
         "table_name" : "key_col"
     ]
     "allowed types": ["type1", "type2", "type3"]
+
+
+
+TBD:
+    serializator
+    implementace primary keys a foreign keys logiky

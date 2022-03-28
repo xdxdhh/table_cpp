@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <map>
 
-class Data;
 
-
+#ifndef DATA_H
+#define DATA_H
 
 
 class Data
@@ -64,9 +64,6 @@ class Int : public Data {
         std::string type() const {return "Int";};
         std::string to_str() const {return std::to_string(_value);}
         std::vector<Data::byte> to_bytes() const {return copy_to_bytes(&_value);}
-        /* Int(const Int &other){
-            _value = other._value;
-        } */
         std::unique_ptr<Data> clone() const{
             return std::make_unique<Int>(*this);
         }
@@ -126,7 +123,7 @@ class Blank : public Data{
 };
 
 
-
+#endif
 
 /* 
 std::map<std::string, std::function<std::unique_ptr<Data>(std::vector<Data::byte>)>> mapa;
