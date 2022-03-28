@@ -21,7 +21,7 @@ class Table{
     void loop_cols(Record& rec, std::function<void(const std::string&, Data&)> fn)
     {
         for(auto i = 0; i < rec.contents.size(); i++){
-            std::string col = columns.get_cols().at(i).type;
+            std::string col = columns.cols.at(i).type;
             fn(col, *rec.contents.at(i));
         }
     }
@@ -44,6 +44,7 @@ class Table{
         void serialize(){
             Serializer s;
             s.serialize_columns(this->columns);
+            s.deserialize_columns();
         };
 
         //descriptive functions:
@@ -270,7 +271,7 @@ Table Table::find(const std::string & colname, const Data & d){   //find returns
     //search
     Table result;
     //copying col names and ypes
-    for(const auto& col : columns.get_cols()){
+    for(const auto& col : columns.cols){
         result.add_col(col.name, col.type);
     }
     for(const auto& rec : records){

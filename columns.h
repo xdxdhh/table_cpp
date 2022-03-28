@@ -17,8 +17,6 @@ class Columns{
             
         };
 
-        std::vector<column> cols;
-        static const std::list<std::string> ALLOWED_TYPES; 
 
         bool is_allowed(std::string type);
         void check_column_existence(std::string name, bool expected, std::string msg) const;
@@ -26,8 +24,8 @@ class Columns{
 
     public:
         std::map<std::string, std::string> foreign_keys; //getter or nah?
-
-
+        static std::list<std::string> ALLOWED_TYPES; 
+        std::vector<column> cols;
 
         void add_column(std::string name, std::string type);
         void delete_column(std::string name);
@@ -35,8 +33,6 @@ class Columns{
         void set_primary(std::string name);
         bool is_primary(std::string name) const;
         int get_colnum() const {return cols.size();};
-        std::vector<column> get_cols() const {return cols;};
-        std::list<std::string> get_allowed_types() const {return ALLOWED_TYPES;};
         std::vector<std::string> get_colnames() const;
         std::vector<std::string> get_coltypes() const;
         int get_col_index(std::string colname) const;
@@ -44,7 +40,7 @@ class Columns{
         
 };
 
-const std::list<std::string> Columns::ALLOWED_TYPES = {"Int", "String", "Bool"};
+std::list<std::string> Columns::ALLOWED_TYPES = {"Int", "String", "Bool"};
 
 
 std::string str_to_lower(std::string s) {
