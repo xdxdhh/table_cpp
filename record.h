@@ -19,7 +19,7 @@ class Record{
     Record(const Record &other);
     void delete_self();
     void set_index(unsigned int i){index = i;};
-    unsigned int get_index(){return index;};
+    unsigned int get_index()const {return index;};
     
     //data management:
     void add_data(std::unique_ptr<Data> d = nullptr);

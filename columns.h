@@ -59,7 +59,6 @@ bool Columns::is_allowed(std::string type){
 }
 
 void Columns::add_column(std::string name, std::string type){
-    //check if type is in allowed types TBD 
     if(!is_allowed(type)){throw std::invalid_argument("Column of type " + type + " is not allowed in the table.");};
     check_column_existence(name, false, " already exists");
     auto& new_col = cols.emplace_back();

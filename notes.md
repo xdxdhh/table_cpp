@@ -220,3 +220,9 @@ json Columns_class:
 TBD:
     serializator
     implementace primary keys a foreign keys logiky
+
+
+
+
+This project have served me as a playground for .
+

@@ -6,6 +6,9 @@
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include "byte_manager.h"
 
+
+//167.27
+
 using namespace jsoncons;
 
 #ifndef SERIALIZER_H
@@ -19,10 +22,11 @@ class Serializer{
     json load_from_json(const std::string& filename);
     void save_into_json(const std::string& filename, const json& json_object);
     public:
-    void serialize_data (const std::unique_ptr<Data>& data_class, const std::string& filename);
+    json serialize_data (const std::unique_ptr<Data>& data_class);
     std::unique_ptr<Data> deserialize_data(const std::string& filename);
 
-    void serialize_record(const Record& record_class, const std::string& filename);
+    json serialize_record(const Record& record_class);
+    void serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename);
 
     void serialize_columns(const Columns& columns_class, const std::string& filename);
     Columns deserialize_columns(const std::string& filename);
@@ -51,6 +55,7 @@ void Serializer::serialize_columns(const Columns& columns_class, const std::stri
     //std::cout << columns << std::endl;
 
     save_into_json("columns.json",columns);
+    std::cout << "Column serialization finished." << std::endl;
 };
 
 void Serializer::save_into_json(const std::string& filename, const json& json_object){
@@ -85,12 +90,12 @@ Columns Serializer::deserialize_columns(const std::string& filename){ //chybi pr
     return final_column;
 }
 
-void Serializer::serialize_data(const std::unique_ptr<Data>& data_class, const std::string& filename){
+json Serializer::serialize_data(const std::unique_ptr<Data>& data_class){
     //std::vector<Data::byte> data_bytes = data_class->to_bytes();
     json data; // main data json
     data["type"] = data_class->type();
     data["data"] = json(byte_string_arg, data_class->to_bytes());
-    save_into_json(filename, data);
+    return data;
 }
 
 std::unique_ptr<Data> Serializer::deserialize_data(const std::string& filename){
@@ -101,12 +106,31 @@ std::unique_ptr<Data> Serializer::deserialize_data(const std::string& filename){
     return data;
 }
 
-void Serializer::serialize_record(const Record& record_class, const std::string& filename){
+json Serializer::serialize_record(const Record& record_class){
+    std::cout << "serializing record." << std::endl;
+    json record;
+    record["index"] = record_class.get_index();
+    json all_datas(json_array_arg);
+    all_datas.reserve(record_class.contents.size());
     for(auto i = 0; i < record_class.contents.size(); i++){
-        serialize_data(record_class.contents.at(i), "hah");
+        json data = serialize_data(record_class.contents.at(i), "data" + std::to_string(i));
+        all_datas.push_back(std::move(data));
     }
+    record["data"] = all_datas;
+    std::cout << all_datas << std::endl;
+    //save_into_json(filename, record);
+    return record;
 }
 
+void Serializer::serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename){
+    json records(json_array_arg); //final json file
+    records.reserve(record_list.size());
+    for(const auto& record : record_list){
+        json rec = serialize_record(*record);
+        records.push_back(std::move(rec));
+    }
+    save_into_json(filename, records);
+}
 
 /* void Serializer::serialize_table(){
 

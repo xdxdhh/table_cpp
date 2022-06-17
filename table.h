@@ -43,8 +43,9 @@ class Table{
 
         void serialize(){
             Serializer s;
-            s.serialize_columns(this->columns, "columns.json");
-            s.deserialize_columns("columns.json");
+            //s.serialize_columns(this->columns, "columns.json");
+            //s.deserialize_columns("columns.json");
+            s.serialize_records(records, "records");  // lepsi s.serialize_records(records);
         };
 
         //descriptive functions:

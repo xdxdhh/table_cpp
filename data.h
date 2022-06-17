@@ -46,7 +46,6 @@ bool operator==(const Data &lhs, const Data &rhs){
     auto lhs_vec = lhs.to_bytes();
     auto rhs_vec = rhs.to_bytes();
     if(rhs_vec.size() != lhs_vec.size())
-        
         return false;
     for(auto i = 0; i < rhs_vec.size(); i++){
         if(rhs_vec.at(i) != lhs_vec.at(i))
