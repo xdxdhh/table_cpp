@@ -32,7 +32,7 @@ class Serializer{
     json serialize_record(const Record& record_class);
     void serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename);
     Record deserialize_record(json record_json);
-    void deserialize_records(std::string filename);
+    std::list<std::unique_ptr<Record>> deserialize_records(std::string filename);
 
     void serialize_columns(const Columns& columns_class, const std::string& filename);
     Columns deserialize_columns(const std::string& filename);
@@ -100,25 +100,17 @@ Columns Serializer::deserialize_columns(const std::string& filename){ //TBD chyb
 }
 
 json Serializer::serialize_data(const std::unique_ptr<Data>& data_class){
-    //std::vector<Data::byte> data_bytes = data_class->to_bytes();
-    json data; // main data json
+    json data; /* main data json */
     data["type"] = data_class->type();
-    data["data"] = json(byte_string_arg, data_class->to_bytes());
+    data["data"] = json(byte_string_arg, data_class->to_bytes(), semantic_tag::base64); /* semantic tag must be specified so that .as<>() knowns how to decode */
     return data;
 }
 
-std::unique_ptr<Data> Serializer::deserialize_data(const std::string& filename){ //nebude chtit dostavat filename ale kus toho jsonu
-    //std::vector<Data::byte> data_bytes = data_class->to_bytes();
-    json data_json = load_from_json(filename);
-    Byte_Manager b;
-    std::unique_ptr<Data> data = b.copy_from_bytes(data_json["type"].as<std::string>(), data_json["data"].as<std::vector<uint8_t>>());
-    return data;
-}
 
-std::unique_ptr<Data> Serializer::deserialize_data(json data_json){ //TBD? nebude chtit dostavat filename ale kus toho jsonu
-    //std::vector<Data::byte> data_bytes = data_class->to_bytes();
+
+std::unique_ptr<Data> Serializer::deserialize_data(json data_json){ 
     Byte_Manager b;
-    std::unique_ptr<Data> data = b.copy_from_bytes(data_json["type"].as<std::string>(), data_json["data"].as<std::vector<uint8_t>>());
+    std::unique_ptr<Data> data = b.copy_from_bytes(data_json["type"].as<std::string>(), data_json["data"].as<std::vector<uint8_t>>(byte_string_arg, semantic_tag::base64));
     return data;
 }
 
@@ -173,13 +165,12 @@ Record Serializer::deserialize_record(json record_json){
         rec.add_data(deserialize_data(data));
         std::cout << "data pushed." << std::endl;
     }
-
-
-    //iterovat a pouzit deserialize data 
+    return rec;
 }
 
-void Serializer::deserialize_records(std::string filename){
+std::list<std::unique_ptr<Record>> Serializer::deserialize_records(std::string filename){
     json records = load_from_json(filename);
+    std::list<std::unique_ptr<Record>> table_records;
     std::cout << "deserializing records" << records << std::endl;
     //json rec = json_query(records, "$[0]")[0];
     //std::cout << rec << std::endl;
@@ -191,11 +182,10 @@ void Serializer::deserialize_records(std::string filename){
     for(auto i = 0; i < number_of_recs; i++){
         json rec = json_query(recs, "$[0]")[0];
         Record one_rec = deserialize_record(rec);
-        //std::cout << rec << std::endl;
+        table_records.push_back(std::make_unique<Record>(one_rec));
     }
-    //std::cout << records["data"] << std::endl;
-    //std::cout << records["data"][0] << std::endl;
     
+    return table_records;
 }
 
 /* void Serializer::serialize_table(){

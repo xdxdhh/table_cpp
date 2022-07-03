@@ -52,6 +52,8 @@ class Table{
             std::cout << "deserialized rec. " << std::endl;
         };
 
+        void deserialize(std::string filename);
+
         /* descriptive functions: */
         void print() const;
         void describe() const;
