@@ -59,39 +59,44 @@ implementace indexu
 
 # Table Class
 
-### 1. Initialization and managing table
+## 1. Initialization and managing table
 
--should tables have their own name ? entity name  THINK\
+-should tables have their own name ? entity name  THINK\ YES TBD 
 
 __Table t;__   --initializes an empty table with an empty ID column \
+
 -__t.add_col(name of column)__ --adds one column                                             
 Column of blanks cannot be created  
+
 -__t.add_cols(names of columns)__ --adds multiple columns\
 example: t.add_cols({"sex", "Bool", "name", "String"});  
 allowed types(see 4.Data types) are checked when adding column  
--__t.delete_col(column_name)__ -- deletes one col from all records  
+
+-__t.delete_col(column_name)__ -- deletes one col from all records 
+
 -__t.delete_cols()__ --   delete multiple columns               TBD 
 example: t.delete_cols({"name","age","color"});
+
 -__t.rename_col()__  -- rename one column
 
-
-
 -__t.get_cols()__ --returns vector with names of columns  
+
 -__t.get_coltypes()__ --return vector with type names of columns  
 
+-__t.truncate()__ --changes IDs so that they form integer sequence starting with 1 
 
--__t.truncate()__ --changes IDs so that they form integer sequence starting with 1 \
--__t.print()__ --prints a 'pretty formatted' table into console \
+-__t.print()__ --prints a 'pretty formatted' table into console 
+
 -__t.describe()__ --show some basic information about table, as number of columns,rows, column name and types  
 
 
 
 
-### 2. Managing records
+## 2. Managing records
 
--__t.add_record(arbitrary number of Datas)__ --adding one record \
+-__t.add_record(arbitrary number of Data class objects)__ --adding one record \
 -example: t.add_record(put(Int,20), put(Bool,false), put(String, "Martin")); \
--when adding a record, types of Datas should be checked with col_types;  
+-when adding a record, types of Data should be checked with col_types;  
 
 t.add_record(record);   //private function  
 
@@ -107,13 +112,13 @@ For deleting just one record, ids can be used, e.g. t.delete_record("id", 2);
 
 
 
-### 3. Working with multiple tables
+## 3. Working with multiple tables
 
 -__t.find(column_name, data)__  returns Table with all of the records having data in that column \
 Find can be chained, e.g: auto d = t.find("name", String("Martin")).find("age", Int(20));  
 
 
-### 4. Data types structure
+## 4. Data types structure
 
 Currently there are 4 pre-implemented types of Data and those are Integer, String, Boolean and Blank. \
 User can define his own type, which has to contain: \
@@ -153,11 +158,14 @@ Combination of primary key must be unique.           --cim kontrolovat uniquenes
 ### 4. JSON structure, loading and saving tables
 
 When saving a table, each record is transferred into json:
+```
     json Record:
     "index" : 1
     "data:" ["type" : "byte_data"]
+```
 
 Then, all of the records are pushed into one json Records
+```
     json Records_class:
         "Records:"
             Record1:
@@ -169,14 +177,16 @@ Then, all of the records are pushed into one json Records
             Record3:
                 "index" : 1
                 "data:" ["type" : "byte_data"]
+```
 
-
-
+```
 json Column:
     "name" : col_name
     "type" : col_type
     "primary_key_flag" : 0
+```
 
+```
 json Columns:
     "Columns":
         Column 1: 
@@ -191,7 +201,8 @@ json Columns:
             "name" : col_name
             "type" : col_type
             "primary_key_flag" : 0 
-
+```
+```
 json Columns_class:
     "cols" : [
         "Column 1": 
@@ -214,7 +225,7 @@ json Columns_class:
         "table_name" : "key_col"
     ]
     "allowed types": ["type1", "type2", "type3"]
-
+```
 
 
 TBD:

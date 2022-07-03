@@ -19,25 +19,48 @@ using jsoncons::jsonpath::json_query;
 
 class Serializer{
     private:
-    json load_from_json(const std::string& filename);
-    void save_into_json(const std::string& filename, const json& json_object);
+    /* helper functions */
+    json load_from_json(const std::string& filename); //ok
+    void save_into_json(const std::string& filename, const json& json_object); //ok
+
     public:
+
     json serialize_data (const std::unique_ptr<Data>& data_class);
     std::unique_ptr<Data> deserialize_data(const std::string& filename);
+    std::unique_ptr<Data> deserialize_data(json data_json);
 
     json serialize_record(const Record& record_class);
     void serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename);
+    Record deserialize_record(json record_json);
+    void deserialize_records(std::string filename);
 
     void serialize_columns(const Columns& columns_class, const std::string& filename);
     Columns deserialize_columns(const std::string& filename);
+
     void serialize_table();
 };
 
 
-void Serializer::serialize_columns(const Columns& columns_class, const std::string& filename){ //parametr instance classy 
-    json columns; //main json file
-    columns.reserve(3);
-    columns["allowed_types"] = columns_class.ALLOWED_TYPES;   //allowed_types asi nepotrebuju prenaset ?
+/* helper functions */
+void Serializer::save_into_json(const std::string& filename, const json& json_object){
+    std::ofstream os(filename);
+    os << pretty_print(json_object);
+}
+
+json Serializer::load_from_json(const std::string& filename){
+    std::ifstream is(filename);
+    json result_json;
+    std::cout << "here" << std::endl;
+    is >> result_json;
+    std::cout << "here2" << std::endl;
+    return result_json;
+}
+
+/* columns serializer */
+
+void Serializer::serialize_columns(const Columns& columns_class, const std::string& filename){ /* parametr instance classy */
+    json columns; /* main json file */
+    columns.reserve(4);
     auto col_vec = columns_class.cols;
     columns["number_of_cols"] = col_vec.size();
     json all_columns(json_array_arg);
@@ -54,36 +77,22 @@ void Serializer::serialize_columns(const Columns& columns_class, const std::stri
     columns["foreign_keys"] = columns_class.foreign_keys;
     //std::cout << columns << std::endl;
 
-    save_into_json("columns.json",columns);
+    save_into_json(filename,columns);
     std::cout << "Column serialization finished." << std::endl;
 };
 
-void Serializer::save_into_json(const std::string& filename, const json& json_object){
-    std::ofstream os(filename);
-    os << pretty_print(json_object);
-}
 
-json Serializer::load_from_json(const std::string& filename){
-    std::ifstream is(filename);
-    json result_json;
-    is >> result_json;
-    return result_json;
-}
-
-Columns Serializer::deserialize_columns(const std::string& filename){ //chybi primary key, test foreign key
-
+Columns Serializer::deserialize_columns(const std::string& filename){ //TBD chybi primary key, test foreign key 
     json columns_json = load_from_json(filename);
     Columns final_column;
 
-    std::list<std::string> allowed =  columns_json["allowed_types"].as<std::list<std::string>>();
-    for(std::string& type : allowed) final_column.ALLOWED_TYPES.push_back(type); //jak nastavit ty static const atributy? udelat konstruktor ktery nastavuje allowed types ci?to asi nejde 
     std::map<std::string, std::string> fg_keys =  columns_json["foreign_keys"].as<std::map<std::string, std::string>>();
     final_column.foreign_keys = fg_keys;
 
     int number_of_cols = columns_json["number_of_cols"].as<int>();
     json cols = columns_json["cols"];
     for(auto i = 0; i < number_of_cols; i++){
-        json col = json_query(cols, "$[" + std::to_string(i) + "]")[0];
+        json col = json_query(cols, "$[" + std::to_string(i) + "]")[0]; 
         std::cout << col << std::endl;
         final_column.add_column(col["name"].as<std::string>(), col["type"].as<std::string>());
     }
@@ -98,7 +107,7 @@ json Serializer::serialize_data(const std::unique_ptr<Data>& data_class){
     return data;
 }
 
-std::unique_ptr<Data> Serializer::deserialize_data(const std::string& filename){
+std::unique_ptr<Data> Serializer::deserialize_data(const std::string& filename){ //nebude chtit dostavat filename ale kus toho jsonu
     //std::vector<Data::byte> data_bytes = data_class->to_bytes();
     json data_json = load_from_json(filename);
     Byte_Manager b;
@@ -106,14 +115,23 @@ std::unique_ptr<Data> Serializer::deserialize_data(const std::string& filename){
     return data;
 }
 
+std::unique_ptr<Data> Serializer::deserialize_data(json data_json){ //TBD? nebude chtit dostavat filename ale kus toho jsonu
+    //std::vector<Data::byte> data_bytes = data_class->to_bytes();
+    Byte_Manager b;
+    std::unique_ptr<Data> data = b.copy_from_bytes(data_json["type"].as<std::string>(), data_json["data"].as<std::vector<uint8_t>>());
+    return data;
+}
+
+
 json Serializer::serialize_record(const Record& record_class){
     std::cout << "serializing record." << std::endl;
     json record;
     record["index"] = record_class.get_index();
+    record["num_of_data"] = record_class.contents.size();
     json all_datas(json_array_arg);
     all_datas.reserve(record_class.contents.size());
     for(auto i = 0; i < record_class.contents.size(); i++){
-        json data = serialize_data(record_class.contents.at(i), "data" + std::to_string(i));
+        json data = serialize_data(record_class.contents.at(i));//, "data" + std::to_string(i));
         all_datas.push_back(std::move(data));
     }
     record["data"] = all_datas;
@@ -123,13 +141,61 @@ json Serializer::serialize_record(const Record& record_class){
 }
 
 void Serializer::serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename){
-    json records(json_array_arg); //final json file
+
+    json rec; /* final json file */
+    rec["number_of_recs"] = record_list.size();
+
+    json records(json_array_arg); 
+    std::cout << "velikost recordu: " << record_list.size() << std::endl;
     records.reserve(record_list.size());
     for(const auto& record : record_list){
         json rec = serialize_record(*record);
         records.push_back(std::move(rec));
     }
-    save_into_json(filename, records);
+    rec["records"] = records;
+    save_into_json(filename, rec);
+}
+
+Record Serializer::deserialize_record(json record_json){
+    //budou se muset radit podle indexu, to bude v deserialize_records
+    //tady se jen poskladaji data
+    Record rec;
+    rec.set_index(record_json["index"].as<int>());
+    std::cout << "index set." << std::endl;
+    int data_count = record_json["num_of_data"].as<int>();
+
+    json data_json = record_json["data"];
+    for(auto i = 0; i < data_count; i++){
+        json data = json_query(data_json, "$[0]")[0];
+        //Record one_rec = deserialize_record(rec);
+        //std::cout << rec << std::endl;
+        std::cout << data << std::endl;
+        rec.add_data(deserialize_data(data));
+        std::cout << "data pushed." << std::endl;
+    }
+
+
+    //iterovat a pouzit deserialize data 
+}
+
+void Serializer::deserialize_records(std::string filename){
+    json records = load_from_json(filename);
+    std::cout << "deserializing records" << records << std::endl;
+    //json rec = json_query(records, "$[0]")[0];
+    //std::cout << rec << std::endl;
+    //std::cout << rec["data"] << std::endl;
+    int number_of_recs = records["number_of_recs"].as<int>();
+    std::cout << number_of_recs << std::endl;
+
+    json recs = records["records"];
+    for(auto i = 0; i < number_of_recs; i++){
+        json rec = json_query(recs, "$[0]")[0];
+        Record one_rec = deserialize_record(rec);
+        //std::cout << rec << std::endl;
+    }
+    //std::cout << records["data"] << std::endl;
+    //std::cout << records["data"][0] << std::endl;
+    
 }
 
 /* void Serializer::serialize_table(){

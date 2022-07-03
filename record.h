@@ -13,7 +13,7 @@ class Record{
     public:
     std::vector<std::unique_ptr<Data>> contents; //public or friend?
 
-    //basic record management:
+    /* basic record management */
     Record() = default;
     ~Record() = default;
     Record(const Record &other);
@@ -21,15 +21,16 @@ class Record{
     void set_index(unsigned int i){index = i;};
     unsigned int get_index()const {return index;};
     
-    //data management:
+    /* data management */
     void add_data(std::unique_ptr<Data> d = nullptr);
     void delete_data(int index);
 
-    //descriptive stuff:
+    /* descriptive stuff */
     void print() const;
 
 };
 
+/* for comparing records */
 bool operator==(const Record &lhs, const Record &rhs){
     if(lhs.contents.size() != rhs.contents.size()){return false;}
     for(auto i = 0; i < lhs.contents.size(); i++){
@@ -39,9 +40,10 @@ bool operator==(const Record &lhs, const Record &rhs){
     return true;
 }
 
-//BASIC RECORD MANAGEMENT:
+/* BASIC RECORD MANAGEMENT */
 
-Record::Record(const Record &other){//copy constructor
+/* copy constructor */
+Record::Record(const Record &other){
     contents.reserve(other.contents.size());
     for(auto i = 0; i < other.contents.size(); i++){
         contents.push_back(other.contents.at(i)->clone());
@@ -52,22 +54,21 @@ void Record::delete_self(){
     contents.clear();
 }
 
-//DATA MANAGEMENT:
+/* DATA MANAGEMENT */
 
 void Record::add_data(std::unique_ptr<Data> d){
-    //if (d) TBD
+    //TBD if (d)
     contents.push_back(std::move(d));
 }
 
 void Record::delete_data(int index){
-    //kontrola jestli jsou data na tom indexu
     if(contents.size() > index){
         contents.erase(contents.begin() + index);
     }
 };
 
 
-//DESCRIPTIVE STUFF:
+/* DESCRIPTIVE STUFF */
 
 void Record::print() const{
     //std::cout << this->get_id() << "     ";
@@ -75,6 +76,5 @@ void Record::print() const{
         std::cout << contents.at(i)->to_str() << "     ";
     }
 }
-
 
 #endif

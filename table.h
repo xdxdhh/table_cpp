@@ -26,13 +26,13 @@ class Table{
         }
     }
 
-    //helper functions:>
+    /* helper functions */
     std::list<unsigned int> get_index_list();
     unsigned int get_max_index();
 
     public:
-        //basic table managing functions
-        Table();
+        /* basic table managing functions */
+        Table(); //TBD konstuktor beze jmena by se mel smazat, kazda tabulka musi mit jmeno --> jak se ale budou jmenovat ty co vrati find?
         Table(std::string name);
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
@@ -43,31 +43,32 @@ class Table{
 
         void serialize(){
             Serializer s;
-            //s.serialize_columns(this->columns, "columns.json");
+            s.serialize_columns(this->columns, "cols_test.json");
             //s.deserialize_columns("columns.json");
-            s.serialize_records(records, "records");  // lepsi s.serialize_records(records);
+            s.serialize_records(records, "rec_test.json");  //TBD lepsi s.serialize_records(records);
+            s.deserialize_columns("cols_test.json");
+            std::cout << "deserialized cols. " << std::endl;
+            s.deserialize_records("rec_test.json");
+            std::cout << "deserialized rec. " << std::endl;
         };
 
-        //descriptive functions:
+        /* descriptive functions: */
         void print() const;
         void describe() const;
 
-        //getters:
+        /* getters: */
         std::vector<std::string> get_colnames() const {return columns.get_colnames();};
         std::vector<std::string> get_coltypes()const {return columns.get_coltypes();};
         unsigned int get_row_num() const {return records.size();}
         unsigned int get_col_num() const {return columns.get_colnum();}
 
 
-
-        //record management:
+        /* record management: */
         void delete_record(const std::string & colname, const Data & d);
         void clear_records();
         void add_record(std::unique_ptr<Record> rec); 
-        //void add_record(std::unique_ptr<Record> rec);
 
-
-        //advanced table stuff:
+        /* advanced table stuff: */
         void truncate();
         Table find(const std::string & colname, const Data & d);
 
@@ -80,8 +81,8 @@ class Table{
             auto rec = std::make_unique<Record>();
             rec->set_index(get_max_index() + 1);
             using discard = std::unique_ptr<Data>[];
-            // https://en.cppreference.com/w/cpp/language/fold
-            // https://en.cppreference.com/w/cpp/language/operator_other#Built-in_comma_operator
+            /* https://en.cppreference.com/w/cpp/language/fold
+               https://en.cppreference.com/w/cpp/language/operator_other#Built-in_comma_operator */
             (void)discard{ nullptr, ((
                 /* args je v této chvíli jeden typ z variadic args..., 
                 args(std::move(d)) volá move konstruktor typu */
@@ -92,8 +93,8 @@ class Table{
         }
 
 
-        //https://stackoverflow.com/questions/21180346/variadic-template-unpacking-arguments-to-typename
-        //https://stackoverflow.com/questions/12515616/expression-contains-unexpanded-parameter-packs/12515637#12515637
+        /* https://stackoverflow.com/questions/21180346/variadic-template-unpacking-arguments-to-typename
+           https://stackoverflow.com/questions/12515616/expression-contains-unexpanded-parameter-packs/12515637#12515637 */
 
         friend std::ostream& operator<<(std::ostream& os,const Table &t){
             os << "-" << std::endl;
@@ -128,6 +129,7 @@ bool Table::operator==(const Table &rhs){
 };
 
 
+/* helper functions */
 std::list<unsigned int> Table::get_index_list(){
     std::list<unsigned int> index_list;
     for(const auto& rec : records){
@@ -143,7 +145,7 @@ unsigned int Table::get_max_index(){
 };
 
 
-//BASIC TABLE MANAGING FUNCTIONS
+/* BASIC TABLE MANAGING FUNCTIONS */
 Table::Table(){
     std::cout << "Inicialization of table succesful." << std::endl;
 }
@@ -152,7 +154,7 @@ Table::Table(std::string name):name(name){
     std::cout << "Inicialization of table " << name << " succesful." << std::endl;
 }
 
-//t.add_col("Name", "String")
+/* t.add_col("Name", "String") */
 void Table::add_col(std::string name, std::string type){ 
     columns.add_column(name, type);
     for(auto& i : records){
@@ -160,8 +162,7 @@ void Table::add_col(std::string name, std::string type){
     }
 }
 
-
-//t.add_cols({"Vek", "Int", "Pohlavi", "Bool"});
+/* t.add_cols({"Vek", "Int", "Pohlavi", "Bool"}); */
 void Table::add_cols(std::vector<std::string> col_names_and_types){
     for(auto i = 0; i < col_names_and_types.size(); i = i+2){
         add_col(col_names_and_types.at(i), col_names_and_types.at(i+1));
@@ -184,9 +185,9 @@ void Table::delete_cols(std::vector<std::string> col_names){
 };
 
 
-//RECORDS MANAGEMENT:
+/* RECORDS MANAGEMENT: */
 
-//t.delete_record('jmeno', 'Petr');
+/* t.delete_record('jmeno', 'Petr'); */
 
 void Table::delete_record(const std::string & colname, const Data & d){
     int index = columns.get_col_index(colname);
@@ -213,7 +214,7 @@ void Table::add_record(std::unique_ptr<Record> rec){
             std::cout << "column types doesnt match: " <<  coltype << data.type() <<std::endl;
             throw std::invalid_argument("Data doesnt match column types.");
         }
-        if(data.type() == "Blank"){ //check if whole record is Blank by counting blanks 
+        if(data.type() == "Blank"){ /* check if whole record is Blank by counting blanks */
             blanks ++;
         }
     });
@@ -224,10 +225,10 @@ void Table::add_record(std::unique_ptr<Record> rec){
 }
 
 
-//DESCRIPTIVE FUNCTIONS:
+/* DESCRIPTIVE FUNCTIONS: */
 
-
-void Table::print() const{ //pretty printing 6
+/* pretty printing */
+void Table::print() const{ 
     std::cout << *this << std::endl;
 }
 
@@ -254,7 +255,7 @@ void Table::describe() const{
 
 
 
-//ADVANCED TABLE FUNCTIONS:
+/* ADVANCED TABLE FUNCTIONS: */
 
 void Table::truncate(){ 
     int i = 1;
@@ -266,12 +267,12 @@ void Table::truncate(){
 }
 
 
-Table Table::find(const std::string & colname, const Data & d){   //find returns table containing all rows that contain data d in column colname
+Table Table::find(const std::string & colname, const Data & d){   /* find returns table containing all rows that contain data d in column colname */
     //getting index of column:
     int index = columns.get_col_index(colname);
     //search
     Table result;
-    //copying col names and ypes
+    //copying col names and types
     for(const auto& col : columns.cols){
         result.add_col(col.name, col.type);
     }
@@ -281,7 +282,6 @@ Table Table::find(const std::string & colname, const Data & d){   //find returns
             result.records.push_back(std::unique_ptr<Record>(new Record(*rec)));
         }    
     }
-    //std::cout << "find done." << std::endl;
     return result;
 }
 
