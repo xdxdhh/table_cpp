@@ -149,7 +149,7 @@ int main(int argc, char const *argv[])
     
     for (auto & v : vec) cout << (int)v << endl;
     cout << Data::copy_from_bytes<Int>(vec).to_str() << endl; */
-    Table t;
+    Table t("lidi");
     t.add_cols({"Jmeno", "String",  "Vek", "Int", "Pohlavi", "Bool"});
     t.add_record(String("Jana"), Int(20), Bool(false));
     t.add_record(String("Josef"), Int(44), Bool(true));

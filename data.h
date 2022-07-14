@@ -74,6 +74,7 @@ class String : public Data{
     public:
         String(std::string value) :_value(value){};
         String(const char *value) :_value(value){};
+        String(const char *value, size_t len) :_value(value, 0, len){};
         std::string type() const {return "String";};
         std::string to_str() const {return _value;};
         std::vector<Data::byte> to_bytes() const {

@@ -13,6 +13,7 @@ class Table{
 
     private:
 
+
     Columns columns;
     std::string name;
     std::list<std::unique_ptr<Record>> records; 
@@ -34,6 +35,7 @@ class Table{
         /* basic table managing functions */
         Table(); //TBD konstuktor beze jmena by se mel smazat, kazda tabulka musi mit jmeno --> jak se ale budou jmenovat ty co vrati find?
         Table(std::string name);
+        void rename_table(std::string new_name){name = new_name;}; //TBD Otestovat že funguje
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
         void delete_col(std::string colname);
@@ -43,13 +45,7 @@ class Table{
 
         void serialize(){
             Serializer s;
-            s.serialize_columns(this->columns, "cols_test.json");
-            //s.deserialize_columns("columns.json");
-            s.serialize_records(records, "rec_test.json");  //TBD lepsi s.serialize_records(records);
-            s.deserialize_columns("cols_test.json");
-            std::cout << "deserialized cols. " << std::endl;
-            s.deserialize_records("rec_test.json");
-            std::cout << "deserialized rec. " << std::endl;
+            s.serialize_table(name, columns,records);
         };
 
         void deserialize(std::string filename);

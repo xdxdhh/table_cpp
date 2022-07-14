@@ -30,14 +30,14 @@ class Serializer{
     std::unique_ptr<Data> deserialize_data(json data_json);
 
     json serialize_record(const Record& record_class);
-    void serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename);
+    json serialize_records(const std::list<std::unique_ptr<Record>>& record_list);
     Record deserialize_record(json record_json);
-    std::list<std::unique_ptr<Record>> deserialize_records(std::string filename);
+    std::list<std::unique_ptr<Record>> deserialize_records(const std::string filename);
 
-    void serialize_columns(const Columns& columns_class, const std::string& filename);
+    json serialize_columns(const Columns& columns_class);
     Columns deserialize_columns(const std::string& filename);
 
-    void serialize_table();
+    void serialize_table(const std::string name, const Columns& columns_class, const std::list<std::unique_ptr<Record>>& record_list );
 };
 
 
@@ -58,7 +58,7 @@ json Serializer::load_from_json(const std::string& filename){
 
 /* columns serializer */
 
-void Serializer::serialize_columns(const Columns& columns_class, const std::string& filename){ /* parametr instance classy */
+json Serializer::serialize_columns(const Columns& columns_class){ /* parametr instance classy */
     json columns; /* main json file */
     columns.reserve(4);
     auto col_vec = columns_class.cols;
@@ -75,10 +75,7 @@ void Serializer::serialize_columns(const Columns& columns_class, const std::stri
     }
     columns["cols"] = all_columns;
     columns["foreign_keys"] = columns_class.foreign_keys;
-    //std::cout << columns << std::endl;
-
-    save_into_json(filename,columns);
-    std::cout << "Column serialization finished." << std::endl;
+    return columns;
 };
 
 
@@ -127,12 +124,12 @@ json Serializer::serialize_record(const Record& record_class){
         all_datas.push_back(std::move(data));
     }
     record["data"] = all_datas;
-    std::cout << all_datas << std::endl;
+    //std::cout << all_datas << std::endl;
     //save_into_json(filename, record);
     return record;
 }
 
-void Serializer::serialize_records(const std::list<std::unique_ptr<Record>>& record_list, const std::string& filename){
+json Serializer::serialize_records(const std::list<std::unique_ptr<Record>>& record_list){
 
     json rec; /* final json file */
     rec["number_of_recs"] = record_list.size();
@@ -145,7 +142,7 @@ void Serializer::serialize_records(const std::list<std::unique_ptr<Record>>& rec
         records.push_back(std::move(rec));
     }
     rec["records"] = records;
-    save_into_json(filename, rec);
+    return rec;
 }
 
 Record Serializer::deserialize_record(json record_json){
@@ -158,17 +155,18 @@ Record Serializer::deserialize_record(json record_json){
 
     json data_json = record_json["data"];
     for(auto i = 0; i < data_count; i++){
-        json data = json_query(data_json, "$[0]")[0];
-        //Record one_rec = deserialize_record(rec);
-        //std::cout << rec << std::endl;
+        json data = json_query(data_json, "$[" + std::to_string(i) + "]")[0];
+        std::cout << "data: ";
         std::cout << data << std::endl;
         rec.add_data(deserialize_data(data));
         std::cout << "data pushed." << std::endl;
     }
+    std::cout << "deserialized record: " << std::endl;
+    rec.print();
     return rec;
 }
 
-std::list<std::unique_ptr<Record>> Serializer::deserialize_records(std::string filename){
+std::list<std::unique_ptr<Record>> Serializer::deserialize_records(const std::string filename){
     json records = load_from_json(filename);
     std::list<std::unique_ptr<Record>> table_records;
     std::cout << "deserializing records" << records << std::endl;
@@ -180,7 +178,7 @@ std::list<std::unique_ptr<Record>> Serializer::deserialize_records(std::string f
 
     json recs = records["records"];
     for(auto i = 0; i < number_of_recs; i++){
-        json rec = json_query(recs, "$[0]")[0];
+        json rec = json_query(recs, "$[" + std::to_string(i) + "]")[0];
         Record one_rec = deserialize_record(rec);
         table_records.push_back(std::make_unique<Record>(one_rec));
     }
@@ -188,8 +186,19 @@ std::list<std::unique_ptr<Record>> Serializer::deserialize_records(std::string f
     return table_records;
 }
 
-/* void Serializer::serialize_table(){
 
-}; mozna nepotrebne? mozna to bude manageovat table*/
+
+void Serializer::serialize_table(const std::string name, const Columns& columns_class, const std::list<std::unique_ptr<Record>>& record_list){
+    std::string filename = "table_" + name;
+
+    json table_json;
+    table_json["name"] = name;
+    table_json["columns_class"] = serialize_columns(columns_class);
+    table_json["records_class"] = serialize_records(record_list);
+
+    save_into_json("table_" + name, table_json);
+}
+
+
 
 #endif

@@ -18,7 +18,7 @@ class Byte_Manager{
 Byte_Manager::Byte_Manager(){
     byte_function_map["Int"] = [](const std::vector<Data::byte>& v){return std::unique_ptr<Data>(new Int(Data::copy_from_bytes<int>(v)));};
     byte_function_map["Bool"] = [](const std::vector<Data::byte>& v){return std::unique_ptr<Data>(new Bool(Data::copy_from_bytes<bool>(v)));};
-    byte_function_map["String"] = [](const std::vector<Data::byte>& v){return std::unique_ptr<Data>(new String(reinterpret_cast<const char*>(v.data())));};
+    byte_function_map["String"] = [](const std::vector<Data::byte>& v){return std::unique_ptr<Data>(new String(reinterpret_cast<const char*>(v.data()), v.size()));};
     byte_function_map["Blank"] = [](const std::vector<Data::byte>& v){return std::unique_ptr<Data>(new Blank());};
 }
 
