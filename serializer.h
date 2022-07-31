@@ -16,6 +16,7 @@ using namespace jsoncons;
 
 
 using jsoncons::jsonpath::json_query;
+using record_list = std::list<std::unique_ptr<Record>>;
 
 class Serializer{
     private:
@@ -27,17 +28,19 @@ class Serializer{
 
     json serialize_data (const std::unique_ptr<Data>& data_class);
     std::unique_ptr<Data> deserialize_data(const std::string& filename);
-    std::unique_ptr<Data> deserialize_data(json data_json);
+    std::unique_ptr<Data> deserialize_data(const json& data_json);
 
     json serialize_record(const Record& record_class);
-    json serialize_records(const std::list<std::unique_ptr<Record>>& record_list);
+    json serialize_records(const record_list& record_list);
     Record deserialize_record(json record_json);
-    std::list<std::unique_ptr<Record>> deserialize_records(const std::string filename);
+    record_list deserialize_records(std::string filename);
 
     json serialize_columns(const Columns& columns_class);
-    Columns deserialize_columns(const std::string& filename);
+    Columns deserialize_columns(std::string filename);
 
-    void serialize_table(const std::string name, const Columns& columns_class, const std::list<std::unique_ptr<Record>>& record_list );
+    void serialize_table(const std::string name, const Columns& columns_class, const record_list& record_list );
+
+    std::string deserialize_table_name(std::string filename);
 };
 
 
@@ -48,10 +51,12 @@ void Serializer::save_into_json(const std::string& filename, const json& json_ob
 }
 
 json Serializer::load_from_json(const std::string& filename){
-    std::ifstream is(filename);
-    json result_json;
+    std::ifstream is("table_lidi.json");
     std::cout << "here" << std::endl;
-    is >> result_json;
+    if(!is.is_open()){
+       std::cout << "Opening json" << filename << "failed." << std::endl; 
+    }
+    json result_json = json::parse(is);
     std::cout << "here2" << std::endl;
     return result_json;
 }
@@ -79,13 +84,11 @@ json Serializer::serialize_columns(const Columns& columns_class){ /* parametr in
 };
 
 
-Columns Serializer::deserialize_columns(const std::string& filename){ //TBD chybi primary key, test foreign key 
-    json columns_json = load_from_json(filename);
+Columns Serializer::deserialize_columns(std::string filename){ //TBD chybi primary key,foreign key
+    //std::map<std::string, std::string> fg_keys =  columns_json["foreign_keys"].as<std::map<std::string, std::string>>();
+    json table_json = load_from_json(filename);
+    json columns_json = table_json["columns_class"];
     Columns final_column;
-
-    std::map<std::string, std::string> fg_keys =  columns_json["foreign_keys"].as<std::map<std::string, std::string>>();
-    final_column.foreign_keys = fg_keys;
-
     int number_of_cols = columns_json["number_of_cols"].as<int>();
     json cols = columns_json["cols"];
     for(auto i = 0; i < number_of_cols; i++){
@@ -105,7 +108,7 @@ json Serializer::serialize_data(const std::unique_ptr<Data>& data_class){
 
 
 
-std::unique_ptr<Data> Serializer::deserialize_data(json data_json){ 
+std::unique_ptr<Data> Serializer::deserialize_data(const json& data_json){ 
     Byte_Manager b;
     std::unique_ptr<Data> data = b.copy_from_bytes(data_json["type"].as<std::string>(), data_json["data"].as<std::vector<uint8_t>>(byte_string_arg, semantic_tag::base64));
     return data;
@@ -129,7 +132,7 @@ json Serializer::serialize_record(const Record& record_class){
     return record;
 }
 
-json Serializer::serialize_records(const std::list<std::unique_ptr<Record>>& record_list){
+json Serializer::serialize_records(const record_list& record_list){
 
     json rec; /* final json file */
     rec["number_of_recs"] = record_list.size();
@@ -166,17 +169,16 @@ Record Serializer::deserialize_record(json record_json){
     return rec;
 }
 
-std::list<std::unique_ptr<Record>> Serializer::deserialize_records(const std::string filename){
-    json records = load_from_json(filename);
-    std::list<std::unique_ptr<Record>> table_records;
-    std::cout << "deserializing records" << records << std::endl;
+record_list Serializer::deserialize_records(std::string filename){ 
+    json table_json = load_from_json(filename);
+    json records_json = table_json["records_class"];
+    record_list table_records;
     //json rec = json_query(records, "$[0]")[0];
     //std::cout << rec << std::endl;
     //std::cout << rec["data"] << std::endl;
-    int number_of_recs = records["number_of_recs"].as<int>();
-    std::cout << number_of_recs << std::endl;
+    int number_of_recs = records_json["number_of_recs"].as<int>();
 
-    json recs = records["records"];
+    json recs = records_json["records"];
     for(auto i = 0; i < number_of_recs; i++){
         json rec = json_query(recs, "$[" + std::to_string(i) + "]")[0];
         Record one_rec = deserialize_record(rec);
@@ -187,8 +189,7 @@ std::list<std::unique_ptr<Record>> Serializer::deserialize_records(const std::st
 }
 
 
-
-void Serializer::serialize_table(const std::string name, const Columns& columns_class, const std::list<std::unique_ptr<Record>>& record_list){
+void Serializer::serialize_table(const std::string name, const Columns& columns_class, const record_list& record_list){
     std::string filename = "table_" + name;
 
     json table_json;
@@ -196,9 +197,13 @@ void Serializer::serialize_table(const std::string name, const Columns& columns_
     table_json["columns_class"] = serialize_columns(columns_class);
     table_json["records_class"] = serialize_records(record_list);
 
-    save_into_json("table_" + name, table_json);
+    save_into_json("table_" + name + ".json", table_json);
 }
 
+std::string Serializer::deserialize_table_name(std::string filename){
+    json table_json = load_from_json(filename);
+    return table_json["name"].as<std::string>();
+}
 
 
 #endif

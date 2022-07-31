@@ -31,10 +31,13 @@ class Table{
     std::list<unsigned int> get_index_list();
     unsigned int get_max_index();
 
+
+    void deserialize(std::string filename);
+
     public:
         /* basic table managing functions */
         Table(); //TBD konstuktor beze jmena by se mel smazat, kazda tabulka musi mit jmeno --> jak se ale budou jmenovat ty co vrati find?
-        Table(std::string name);
+        Table(std::string name, std::string arg = "table");
         void rename_table(std::string new_name){name = new_name;}; //TBD Otestovat že funguje
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
@@ -43,12 +46,7 @@ class Table{
         void rename_col(std::string oldname, std::string newname){columns.rename_col(oldname,newname);};
         bool operator==(const Table &rhs);
 
-        void serialize(){
-            Serializer s;
-            s.serialize_table(name, columns,records);
-        };
 
-        void deserialize(std::string filename);
 
         /* descriptive functions: */
         void print() const;
@@ -65,6 +63,12 @@ class Table{
         void delete_record(const std::string & colname, const Data & d);
         void clear_records();
         void add_record(std::unique_ptr<Record> rec); 
+
+        void serialize(){
+            Serializer s;
+            s.serialize_table(name, columns,records);
+        };
+
 
         /* advanced table stuff: */
         void truncate();
@@ -96,7 +100,7 @@ class Table{
 
         friend std::ostream& operator<<(std::ostream& os,const Table &t){
             os << "-" << std::endl;
-            os << "TABLE" <<std::endl;
+            os << "TABLE" << t.name << std::endl;
             os << "index" << "   ";
             auto colnames = t.columns.get_colnames();
             for(const auto& colname : colnames){
@@ -148,9 +152,29 @@ Table::Table(){
     std::cout << "Inicialization of table succesful." << std::endl;
 }
 
-Table::Table(std::string name):name(name){
+
+Table::Table(std::string name, std::string arg):name(name){
+    if(arg == "json"){
+        Serializer s;
+        deserialize(name);
+    }
     std::cout << "Inicialization of table " << name << " succesful." << std::endl;
-}
+};
+
+
+void Table::deserialize(std::string filename){
+    Serializer s;
+    std::cout << "deserializing table." << std::endl;
+    Columns final_columns = s.deserialize_columns(filename);
+    std::cout << "columns deserialized." << std::endl;
+    this->columns = std::move(final_columns);
+    record_list final_records = s.deserialize_records(filename);
+    std::cout << "records deserialized." << std::endl;
+    this->records = std::move(final_records);
+    this->name = s.deserialize_table_name(filename);
+    std::cout << "name deserialized." << std::endl;
+};
+
 
 /* t.add_col("Name", "String") */
 void Table::add_col(std::string name, std::string type){ 
@@ -232,7 +256,7 @@ void Table::print() const{
 
 void Table::describe() const{
     std::cout << "-" << std::endl;
-    std::cout << "DESCRIBE: Table " << std::endl; //TBD pridat jmeno table
+    std::cout << "DESCRIBING TABLE " << name << std::endl; 
     std::cout << "Number of cols:" << columns.get_colnum() << std::endl;
     std::cout << "Number of records:" << get_row_num() << std::endl;
     auto cols = get_colnames();

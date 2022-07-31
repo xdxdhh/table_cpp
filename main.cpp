@@ -153,7 +153,16 @@ int main(int argc, char const *argv[])
     t.add_cols({"Jmeno", "String",  "Vek", "Int", "Pohlavi", "Bool"});
     t.add_record(String("Jana"), Int(20), Bool(false));
     t.add_record(String("Josef"), Int(44), Bool(true));
-    t.serialize();
+    t.serialize(); //TBD dat option vybrat si vlastni jmeno souboru 
+    Table s("table_lidi.json", "json");
+    if(t == s)
+        cout << "yy.";
+    t.describe(); //porovnavame obsahy ne nazvy
+    s.describe();
+    cout << t << endl;
+    cout << s << endl;
+    
+    
  
 }
 

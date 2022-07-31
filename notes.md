@@ -61,14 +61,14 @@ implementace indexu
 
 ## 1. Initialization and managing table
 
--should tables have their own name ? entity name  THINK\ YES TBD 
+-should tables have their own name ? YES 
 
-__Table t;__   --initializes an empty table with an empty ID column \
+__Table t;__   --initializes an empty table with an empty index column --> index moved to rec
 
--__t.add_col(name of column)__ --adds one column                                             
+-__t.add_col(name of column, type)__ --adds one column                                             
 Column of blanks cannot be created  
 
--__t.add_cols(names of columns)__ --adds multiple columns\
+-__t.add_cols(names of columns types of cols)__ --adds multiple columns\
 example: t.add_cols({"sex", "Bool", "name", "String"});  
 allowed types(see 4.Data types) are checked when adding column  
 
@@ -83,7 +83,7 @@ example: t.delete_cols({"name","age","color"});
 
 -__t.get_coltypes()__ --return vector with type names of columns  
 
--__t.truncate()__ --changes IDs so that they form integer sequence starting with 1 
+-__t.truncate()__ --changes indexes so that they form integer sequence starting with 1 
 
 -__t.print()__ --prints a 'pretty formatted' table into console 
 
