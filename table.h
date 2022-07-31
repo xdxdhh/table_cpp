@@ -1,7 +1,5 @@
-#include <list>
 #include "record.h"
 #include <iostream>
-#include <stdexcept>
 #include <functional>
 #include "columns.h"
 #include "serializer.h"
@@ -12,8 +10,6 @@
 class Table{
 
     private:
-
-
     Columns columns;
     std::string name;
     std::list<std::unique_ptr<Record>> records; 
@@ -28,25 +24,20 @@ class Table{
     }
 
     /* helper functions */
-    std::list<unsigned int> get_index_list();
-    unsigned int get_max_index();
-
-
+    std::list<unsigned int> get_index_list(); /* get all record indexes*/
+    unsigned int get_max_index(); /* get max index */
     void deserialize(std::string filename);
 
     public:
         /* basic table managing functions */
-        Table(); //TBD konstuktor beze jmena by se mel smazat, kazda tabulka musi mit jmeno --> jak se ale budou jmenovat ty co vrati find?
-        Table(std::string name, std::string arg = "table");
-        void rename_table(std::string new_name){name = new_name;}; //TBD Otestovat že funguje
+        Table(std::string name, std::string arg = "table"); /* if arg="json" construct from json */
+        void rename_table(std::string new_name){name = new_name;}; 
         void add_col(std::string name, std::string type);
         void add_cols(std::vector<std::string> col_names_and_types);
         void delete_col(std::string colname);
         void delete_cols(std::vector<std::string> col_names);
         void rename_col(std::string oldname, std::string newname){columns.rename_col(oldname,newname);};
         bool operator==(const Table &rhs);
-
-
 
         /* descriptive functions: */
         void print() const;
@@ -58,22 +49,28 @@ class Table{
         unsigned int get_row_num() const {return records.size();}
         unsigned int get_col_num() const {return columns.get_colnum();}
 
-
         /* record management: */
         void delete_record(const std::string & colname, const Data & d);
         void clear_records();
         void add_record(std::unique_ptr<Record> rec); 
 
+        /* serialization */
         void serialize(){
             Serializer s;
-            s.serialize_table(name, columns,records);
+            s.serialize_table(name,columns,records,"table_" + name + ".json"); /* automatic filename if used didnt choose any*/
         };
 
+        void serialize(std::string filename){
+            Serializer s;
+            s.serialize_table(name,columns,records,filename);
+        };
 
-        /* advanced table stuff: */
-        void truncate();
+        /* advanced table functions */
+        void truncate(); /* re-arrange indexes so they form integer sequence starting with 1*/
         Table find(const std::string & colname, const Data & d);
 
+        /* t.add_record(String("Jane"), Int(20), Bool(false)) ---- Adds one record to the table. If number of arguments doesnt match number of columns, std::invalid_argument is thrown.
+         If nullptr is passed, std::invalid_argument is thrown. To pass null value, use Blank data type. If unknown Data type is added, std::invalid_argument is thrown. */
         template<typename... args>  //https://stackoverflow.com/questions/29972563/how-to-construct-a-vector-with-unique-pointers
         void add_record(args&&...d){
             auto size = sizeof...(d);
@@ -94,9 +91,9 @@ class Table{
             add_record(std::move(rec)); //bad data type is checked here
         }
 
-
         /* https://stackoverflow.com/questions/21180346/variadic-template-unpacking-arguments-to-typename
            https://stackoverflow.com/questions/12515616/expression-contains-unexpanded-parameter-packs/12515637#12515637 */
+
 
         friend std::ostream& operator<<(std::ostream& os,const Table &t){
             os << "-----" << std::endl;
@@ -142,16 +139,15 @@ std::list<unsigned int> Table::get_index_list(){
 
 unsigned int Table::get_max_index(){
     auto index_list = get_index_list();
+    if(index_list.begin() == index_list.end()){
+        return 0;
+    }
     unsigned int max = *max_element(index_list.begin(), index_list.end());
     return max;
 };
 
 
 /* BASIC TABLE MANAGING FUNCTIONS */
-Table::Table(){
-    std::cout << "Inicialization of table succesful." << std::endl;
-}
-
 
 Table::Table(std::string name, std::string arg):name(name){
     if(arg == "json"){
@@ -161,22 +157,21 @@ Table::Table(std::string name, std::string arg):name(name){
     std::cout << "Inicialization of table " << name << " succesful." << std::endl;
 };
 
+/* DESERIALIZATION */
 
 void Table::deserialize(std::string filename){
     Serializer s;
-    std::cout << "deserializing table." << std::endl;
     Columns final_columns = s.deserialize_columns(filename);
-    std::cout << "columns deserialized." << std::endl;
     this->columns = std::move(final_columns);
     record_list final_records = s.deserialize_records(filename);
-    std::cout << "records deserialized." << std::endl;
     this->records = std::move(final_records);
     this->name = s.deserialize_table_name(filename);
-    std::cout << "name deserialized." << std::endl;
+    this->truncate(); /* reset indexes */
 };
 
+/* MANAGING COLUMNS*/
 
-/* t.add_col("Name", "String") */
+/* t.add_col("Name", "String") ---- Adds one column with given name and type. */
 void Table::add_col(std::string name, std::string type){ 
     columns.add_column(name, type);
     for(auto& i : records){
@@ -184,13 +179,14 @@ void Table::add_col(std::string name, std::string type){
     }
 }
 
-/* t.add_cols({"Vek", "Int", "Pohlavi", "Bool"}); */
+/* t.add_cols({"Age", "Int", "Gender", "Bool"}) ---- Adds multiple columns by using vector of names and types in name,type order. */
 void Table::add_cols(std::vector<std::string> col_names_and_types){
     for(auto i = 0; i < col_names_and_types.size(); i = i+2){
         add_col(col_names_and_types.at(i), col_names_and_types.at(i+1));
     }
 }
 
+/* t.delete_col("age") ---- Deletes one column with given name. If the table does not contain given name std::invalid_argument is thrown. */
 void Table::delete_col(std::string colname){
     int index = columns.get_col_index(colname);
     columns.delete_column(colname);
@@ -200,6 +196,7 @@ void Table::delete_col(std::string colname){
     std::cout << "Column " << colname << " deleted." << std::endl;
 };
 
+/* t.delete_cols{"Age", "Name", "Gender"} ---- Delete multiple columns with specified names. If one of the names doesnt exist in the table, std::invalid_argument is thrown. */
 void Table::delete_cols(std::vector<std::string> col_names){
     for(auto &col : col_names){
         delete_col(col);
@@ -209,17 +206,16 @@ void Table::delete_cols(std::vector<std::string> col_names){
 
 /* RECORDS MANAGEMENT: */
 
-/* t.delete_record('jmeno', 'Petr'); */
-
+/* t.delete_record('column_name', 'value') ---- Delete all records which contains certain value in given column. If non-existing column name is specified, std::invalid_argument is thrown.*/
 void Table::delete_record(const std::string & colname, const Data & d){
     int index = columns.get_col_index(colname);
     if(index == -1){throw std::invalid_argument("Colname to delete doesnt exist");};
     std::erase_if(records, [&](auto& rec){return *rec->contents.at(index) == d;});
 }
 
+/* t.clear_records() ---- Delete all records, keep columns. */
 void Table::clear_records(){
     records.clear();
-    //std::cout << "size after deleting table:" << records.size() <<std::endl; //helper print
 }
 
 
@@ -279,18 +275,18 @@ void Table::describe() const{
 void Table::truncate(){ 
     int i = 1;
     for(auto& rec : records){
-        //std::cout << "truncationg" << std::endl;
         rec->set_index(i);
         i++;  
     }
 }
 
-
+/* find("column name", value) ---- returns a table which contains all records with value in a given column. Throws std::invalid_argument if the column does not exist.
+Can return an empty table. */
 Table Table::find(const std::string & colname, const Data & d){   /* find returns table containing all rows that contain data d in column colname */
     //getting index of column:
     int index = columns.get_col_index(colname);
     //search
-    Table result;
+    Table result("table");
     //copying col names and types
     for(const auto& col : columns.cols){
         result.add_col(col.name, col.type);

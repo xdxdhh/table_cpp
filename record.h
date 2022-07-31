@@ -1,4 +1,3 @@
-#include <vector>
 #include "data.h"
 #include <memory>
 #include <iostream>

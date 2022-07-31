@@ -1,8 +1,6 @@
 #include "table.h"
 #include "iostream"
-#include <vector>
 #include "jsoncons/include/jsoncons/json.hpp"
-#include <fstream>
 #include <jsoncons_ext/jsonpath/jsonpath.hpp>
 #include <jsoncons_ext/bson/bson.hpp>
 #include <map>
@@ -14,44 +12,30 @@ using jsoncons::jsonpath::json_query;
 namespace bson = jsoncons::bson;
 
 
-void print(Data &d)
-{
-
-}
-
-
-
-
-//#define put(type, value) std::unique_ptr<Data>(dynamic_cast<Data*>(new type(value)))
-//#define blank std::unique_ptr<Data>(dynamic_cast<Data*>(new Blank()))
-
 
 int main(int argc, char const *argv[])
 {
-    /* Table t;
+    Table t("ppl");
     t.add_col("vek","Int");
     t.add_cols({"pohlavi", "Bool", "jmeno", "String"});
 
-    t.add_record(Int(20), Bool(false), String("Martin")); */
-    //t.add_record(Int(20), Bool(false), Blank());
-    //t.add_record(put<Int>(20), put<Bool>(false), put<String>("Martin"));
-    //t.add_record(put<Int>(60), put<Blank>(), put<String>("Martin"));
-    //t.add_record(put<Int>(40), put<Bool>(true) , put<String>("Agata"));
+    t.add_record(Int(20), Bool(false), String("Martin")); 
+    t.add_record(Int(20), Bool(false), Blank());
 
-    /* cout << t << endl;
+    cout << t << endl;
     
-    Table x;
+    Table x("druzi lidi");
     x.add_col("vek","Int");
     x.add_cols({"pohlavi", "Bool", "jmeno", "String"});
     x.add_record(Int(20), Bool(false), String("Marsstin"));
     x.add_record(Int(20), Bool(false), String("X"));
     x.add_record(Int(20), Bool(false), String("Y"));
-
+    cout << x << endl;
 
     x.delete_record("jmeno", String("X"));
     x.print();
     x.truncate();
-    x.print(); */
+    x.print();
     //auto d = t.find("jmeno", String("Martin")).find("vek", Int(20)) ;
     //d.print();
 
@@ -149,17 +133,19 @@ int main(int argc, char const *argv[])
     
     for (auto & v : vec) cout << (int)v << endl;
     cout << Data::copy_from_bytes<Int>(vec).to_str() << endl; */
-    Table t("lidi");
-    t.add_cols({"Jmeno", "String",  "Vek", "Int", "Pohlavi", "Bool"});
-    t.add_record(String("Jana"), Int(20), Bool(false));
-    t.add_record(String("Josef"), Int(44), Bool(true));
-    t.serialize(); //TBD dat option vybrat si vlastni jmeno souboru 
+    Table t2("lidi");
+    t2.add_cols({"Jmeno", "String",  "Vek", "Int", "Pohlavi", "Bool"});
+    t2.add_record(String("Jana"), Int(20), Bool(false));
+    t2.add_record(String("Josef"), Int(44), Bool(true));
+    t2.serialize(); 
     Table s("table_lidi.json", "json");
-    if(t == s)
+    if(t2 == s)
         cout << "yy.";
-    t.describe(); //porovnavame obsahy ne nazvy
+    t2.describe(); //porovnavame obsahy ne nazvy
     s.describe();
-    cout << t << endl;
+    cout << t2 << endl;
+    cout << s << endl;
+    s.rename_table("new lidi");
     cout << s << endl;
     
     

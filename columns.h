@@ -4,48 +4,40 @@
 #include <stdexcept>
 #include <list>
 
-// -> to solve
-/* -> explaining */
-
 
 #ifndef COLUMNS_H
 #define COLUMNS_H
-//add allowed types here or left in class?
 
 class Columns{
     private:
         struct column{
             std::string name;
-            std::string type;
-            bool primary_key_flag;            
+            std::string type;          
         };
 
-
-        bool is_allowed(std::string type);
-        void check_column_existence(std::string name, bool expected, std::string msg) const;
-        bool colname_compare(std::string lhs, std::string rhs) const;
+        bool is_allowed(std::string type); /* check if this column type is allowed */
+        void check_column_existence(std::string name, bool expected, std::string msg) const; /* check if column already exists and compare it to expected value*/
+        bool colname_compare(std::string lhs, std::string rhs) const; /* compare 2 column names*/
 
     public:
-        std::map<std::string, std::string> foreign_keys; //getter or nope?
-        static std::list<std::string> ALLOWED_TYPES; 
-        std::vector<column> cols;
+        static std::list<std::string> ALLOWED_TYPES; /* list of allowed column types */
+        std::vector<column> cols; /* main vector holding columns */
 
+        /* working with columns */
         void add_column(std::string name, std::string type);
         void delete_column(std::string name); 
         void rename_col(std::string oldname, std::string newname);
 
-        bool has_primary_key() const; /* check if table has primary key */
-        void set_primary(std::string name);
-        bool is_primary(std::string name) const;
-
-        /* getters */
+        /* helpful getters */
         int get_colnum() const {return cols.size();};
         std::vector<std::string> get_colnames() const;
         std::vector<std::string> get_coltypes() const;
-        int get_col_index(std::string colname) const;
-        
-        
+        int get_col_index(std::string colname) const; 
+          
 };
+
+std::list<std::string> Columns::ALLOWED_TYPES = {"Int", "String", "Bool"}; /* Blank column cannot be created */
+
 
 /* helper function for compare */
 std::string str_to_lower(std::string s) {
@@ -55,7 +47,6 @@ std::string str_to_lower(std::string s) {
     return s;
 }
 
-std::list<std::string> Columns::ALLOWED_TYPES = {"Int", "String", "Bool"}; /* Blank column cannot be created */
 
 bool Columns::is_allowed(std::string type){ /* checks if this coltype is allowed */
     for(const auto& t : ALLOWED_TYPES){
@@ -88,16 +79,15 @@ bool Columns::colname_compare(std::string lhs, std::string rhs) const{
 
 void Columns::add_column(std::string name, std::string type){
     if(!is_allowed(type)){throw std::invalid_argument("Column of type " + type + " is not allowed in the table.");};
-    check_column_existence(name, false, " already exists");
+    check_column_existence(name, false, " already exists.");
     auto& new_col = cols.emplace_back();
     new_col.name = name;
-    new_col.primary_key_flag = false;
     new_col.type = type;
     std::cout << "Column " << name << " added." <<std::endl;
 }
 
 void Columns::delete_column(std::string name){
-    check_column_existence(name, true, " was not found");
+    check_column_existence(name, true, " to delete was not found.");
     std::erase_if(cols, [&](auto const & col){return col.name == name;});
 }
 
@@ -109,32 +99,6 @@ void Columns::rename_col(std::string oldname, std::string newname){
         }
     }
 };
-
-
-bool Columns::has_primary_key() const{
-    for(const auto& col : cols){
-        if(col.primary_key_flag == true)
-            return true;
-    }
-    return false;
-}
-
-void Columns::set_primary(std::string name){
-    check_column_existence(name, true, " was not found");
-    for(auto& col : cols){
-        if(col.name == name)
-            col.primary_key_flag = true; //TBD chybi kontrola ze je to unique sloupecek
-    }
-}
-
-bool Columns::is_primary(std::string name) const{
-    check_column_existence(name, true, " was not found");
-    for(const auto& col : cols){
-        if(col.name == name)
-            return col.primary_key_flag;
-    }
-    return false;
-}
 
 
 std::vector<std::string> Columns::get_colnames() const{

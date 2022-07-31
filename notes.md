@@ -228,9 +228,7 @@ json Columns_class:
 ```
 
 
-TBD:
-    serializator
-    implementace primary keys a foreign keys logiky
+
 
 
 
