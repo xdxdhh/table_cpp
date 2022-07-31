@@ -99,7 +99,7 @@ class Table{
            https://stackoverflow.com/questions/12515616/expression-contains-unexpanded-parameter-packs/12515637#12515637 */
 
         friend std::ostream& operator<<(std::ostream& os,const Table &t){
-            os << "-" << std::endl;
+            os << "-----" << std::endl;
             os << "TABLE" << t.name << std::endl;
             os << "index" << "   ";
             auto colnames = t.columns.get_colnames();
@@ -113,7 +113,7 @@ class Table{
                 (*i)->print();
                 os << std::endl;
             }
-            os << "-" << std::endl;
+            os << "-----" << std::endl;
             return os;
         };
 };
@@ -255,24 +255,25 @@ void Table::print() const{
 }
 
 void Table::describe() const{
-    std::cout << "-" << std::endl;
+    std::cout << std::endl;
+    std::cout << "-----" << std::endl;
     std::cout << "DESCRIBING TABLE " << name << std::endl; 
-    std::cout << "Number of cols:" << columns.get_colnum() << std::endl;
-    std::cout << "Number of records:" << get_row_num() << std::endl;
+    std::cout << "number of cols:" << columns.get_colnum() << std::endl;
+    std::cout << "number of records:" << get_row_num() << std::endl;
     auto cols = get_colnames();
-    std::cout << "Column names:" ;
+    std::cout << "column names:" ;
     auto colnames = columns.get_colnames();
     for(const auto& colname : colnames){
-        std::cout << colname <<", ";
+        std::cout << colname <<"   ";
     }
     std::cout << std::endl;
     auto coltypes = columns.get_coltypes();
-    std::cout << "Column types:" ;
+    std::cout << "column types:" ;
     for(const auto& coltype : coltypes){
-        std::cout << coltype <<", ";
+        std::cout << coltype <<"   ";
     }
     std::cout << std::endl;
-    std::cout << "-" << std::endl;
+    std::cout << "-----" << std::endl;
 };
 
 
