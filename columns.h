@@ -17,9 +17,7 @@ class Columns{
         struct column{
             std::string name;
             std::string type;
-            bool primary_key_flag;
-            //foreign key flag?-TBD
-            
+            bool primary_key_flag;            
         };
 
 
@@ -100,9 +98,7 @@ void Columns::add_column(std::string name, std::string type){
 
 void Columns::delete_column(std::string name){
     check_column_existence(name, true, " was not found");
-    //TBD check if it isnt a part of primary key 
     std::erase_if(cols, [&](auto const & col){return col.name == name;});
-    //TBD delete from foreign key map 
 }
 
 void Columns::rename_col(std::string oldname, std::string newname){

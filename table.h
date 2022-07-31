@@ -100,7 +100,7 @@ class Table{
 
         friend std::ostream& operator<<(std::ostream& os,const Table &t){
             os << "-----" << std::endl;
-            os << "TABLE" << t.name << std::endl;
+            os << "TABLE   " << t.name << std::endl;
             os << "index" << "   ";
             auto colnames = t.columns.get_colnames();
             for(const auto& colname : colnames){
@@ -260,18 +260,14 @@ void Table::describe() const{
     std::cout << "DESCRIBING TABLE " << name << std::endl; 
     std::cout << "number of cols:" << columns.get_colnum() << std::endl;
     std::cout << "number of records:" << get_row_num() << std::endl;
-    auto cols = get_colnames();
-    std::cout << "column names:" ;
+    std::cout << "columns: " ;
+
     auto colnames = columns.get_colnames();
-    for(const auto& colname : colnames){
-        std::cout << colname <<"   ";
-    }
-    std::cout << std::endl;
     auto coltypes = columns.get_coltypes();
-    std::cout << "column types:" ;
-    for(const auto& coltype : coltypes){
-        std::cout << coltype <<"   ";
+    for(auto i = 0; i < colnames.size(); i++){
+        std::cout << colnames.at(i) << "(" << coltypes.at(i) << ")   ";
     }
+
     std::cout << std::endl;
     std::cout << "-----" << std::endl;
 };
