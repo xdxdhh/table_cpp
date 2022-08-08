@@ -1,4 +1,11 @@
-# Tables
+This project has served me mainly as a playground for getting to know virtual functions and classes. Along the way I used some operator overloading, template functions, a lot of std containers and unique pointers. I have also tried using GoogleTest for a first time and had fun time with json serialization using this neat json library(https://github.com/danielaparker/jsoncons) that even supported my binary data.
+
+Below a short description can be found, for more detailed info about functions(and maybe a few examples) see notes.md.
+
+I managed to implement a table class which can actually do only pretty basic functions, but getting powerful table was not my intention at all. It was more about thinking about the class structure and making proper design choices(I redesigned every class at least once:D). There is definitely more to be done/fixed etc., but I think it has already served my puprose and I don't think I will ever re-visit/continue this.
+
+
+# Tables 
 
 ### Constructing
 Table can be constucted in two ways, as a new table with given name or from JSON with specified structure. When constructing from JSON, the second string argument "json" must be used along with json filename.
@@ -16,17 +23,6 @@ There are 2 possible ways to view information about the table, either print func
 ### Indexing
 Each record has its unique identifier called index. By default integer sequence starting with 1 is used for this purpose. Function truncate can be used anytime to reset indexes.
 Indexes are not transfered through serializing and deserializing columns, which means that every table created from json has integer sequence 1-n indexes.
-
-
-
-/* K cemu jsou uzivateli indexy ?? Neskryvat je, ale dat uzivateli moznost queryovat na základě indexu. */
-
-/* implementovat zmenu dat v recordu */
-
-### Table functions
-
-
-
 
 ### Data types
 There are 4 pre-implemented data types - Int, String, Boolean and Blank. Blank is a special data type which should serve as null/none. Therefore row full of Blanks cannot be created as it would lack purpose.
