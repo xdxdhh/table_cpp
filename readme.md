@@ -2,7 +2,7 @@ This project has served me mainly as a playground for getting to know virtual fu
 
 Below a short description can be found, for more detailed info about functions(and maybe a few examples) see notes.md.
 
-I managed to implement a table class which can actually do only pretty basic functions, but getting powerful table was not my intention at all. It was more about thinking about the class structure and making proper design choices(I redesigned every class at least once:D). There is definitely more to be done/fixed etc., but I think it has already served my puprose and I don't think I will ever re-visit/continue this.
+I managed to implement a table class which can actually do only pretty basic functions, but getting powerful table was not my intention at all. It was more about thinking about the class structure and making proper design choices(I redesigned every class at least once:D). There is definitely more to be done/fixed etc., but I think it has already served my learning puprose and I don't think I will ever re-visit/continue this.
 
 
 # Tables 
