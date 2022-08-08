@@ -10,7 +10,7 @@ class Record{
     unsigned int index;
 
     public:
-    std::vector<std::unique_ptr<Data>> contents; //public or friend?
+    std::vector<std::unique_ptr<Data>> contents;  
 
     /* basic record management */
     Record() = default;
@@ -70,7 +70,6 @@ void Record::delete_data(int index){
 /* DESCRIPTIVE STUFF */
 
 void Record::print() const{
-    //std::cout << this->get_id() << "     ";
     for(auto i = 0; i < contents.size(); i++){
         std::cout << contents.at(i)->to_str() << "     ";
     }
